@@ -4,6 +4,9 @@ If you want to read English, please translate it yourself
 懒得看版本：下载链接如下：
 https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/relese
 
+
+国内的环境大家也都知道，我敢开源分分钟冒出几十个盗版还收费，哥们就不开源了，算法在下面写出来了，觉得不放心就自己按照算法敲代码
+
 # -代码执行逻辑如下：
 -	
   - **外层循环**: 遍历所有对流换热系数 `H_conv`。
