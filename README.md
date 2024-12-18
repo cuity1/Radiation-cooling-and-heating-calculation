@@ -1,6 +1,8 @@
 想看英文自己翻译
 If you want to read English, please translate it yourself
 
+懒得看版本：下载链接如下：
+https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/relese
 
 # -代码执行逻辑如下：
 -	
