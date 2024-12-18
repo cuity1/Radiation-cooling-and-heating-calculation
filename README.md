@@ -2,7 +2,9 @@
 If you want to read English, please translate it yourself
 
 懒得看版本：下载链接如下：
-[https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
+（麻瓜通道）https://gitee.com/cuity1999/Radiation-cooling-and-heating-calculation/releases/
+（魔法通道）[https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
+
 
 
 国内的环境大家也都知道，我敢开源分分钟冒出几十个盗版还收费，哥们就不开源了，算法在下面写出来了，觉得不放心就自己按照算法敲代码
