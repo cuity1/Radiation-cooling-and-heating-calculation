@@ -2,7 +2,9 @@
 If you want to read English, please translate it yourself
 
 懒得看版本：下载链接如下：
+（快速通道）https://wwja.lanzoue.com/b0knk1xve
 （麻瓜通道）https://gitee.com/cuity1999/Radiation-cooling-and-heating-calculation/releases/
+
 （魔法通道）[https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
 
 
