@@ -8,7 +8,7 @@ If you want to read English, please translate it yourself
 （魔法通道）[https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
 
 
-
+源代码写的很烂，已经上传，最好别让我发现有倒狗，不然不再更新优化
 
 # -代码执行逻辑如下：
 -	
