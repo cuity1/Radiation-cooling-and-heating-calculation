@@ -57,4 +57,4 @@
 
 ---
 
-![公式](https://github.com/user-attachments/assets/825669fd-a9e0-4b1e-8518-0a0e887ff744)
+<img width="740" alt="公式" src="https://github.com/user-attachments/assets/56f17d52-aca5-4234-9500-c5b4d75802b4" />
