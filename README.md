@@ -12,8 +12,8 @@
   [GitHub Releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases)
 
 - **QQ群加群**：  
-  点击链接加入群聊【辐射制冷青椒交流群】：  
-  [http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318)
+
+[点击链接加入群聊【辐射制冷青椒交流群】](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318)
 
 > **温馨提示**  
 > 源代码写的很烂，已经上传，最好别让我发现有倒狗，不然不再更新优化
