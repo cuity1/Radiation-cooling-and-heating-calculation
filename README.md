@@ -1,4 +1,4 @@
-![公式](https://github.com/user-attachments/assets/9fa92496-0a40-42d6-afaf-96f9fff760ab)# 辐射制冷与加热功率计算
+# 辐射制冷与加热功率计算
 
 > **ATTENTION**  
 > This software only supports Simplified Chinese
