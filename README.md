@@ -1,7 +1,7 @@
 # 辐射制冷与加热功率计算
 
-> **注意**  
-> 想看英文自己翻译
+> **ATTENTION**  
+> This software only supports Simplified Chinese
 
 ## 下载链接
 
