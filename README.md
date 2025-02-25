@@ -1,4 +1,4 @@
-# 辐射制冷与加热功率计算
+![公式](https://github.com/user-attachments/assets/9fa92496-0a40-42d6-afaf-96f9fff760ab)# 辐射制冷与加热功率计算
 
 > **ATTENTION**  
 > This software only supports Simplified Chinese
@@ -57,16 +57,4 @@
 
 ---
 
-## 详细代码说明
-
-### 1. 函数入口与必要文件检查
-
-```python
-def main_cooling_gui(file_paths):
-    """主程序逻辑"""
-    # 检查必要文件是否已选择
-    required_files = ['config', 'reflectance', 'spectrum', 'wavelength', 'emissivity', 'atm_emissivity']
-    for key in required_files:
-        if key not in file_paths or not file_paths[key]:
-            raise Exception(f"请确保已选择所有必要的文件。缺少：{key}")
-    ...
+![公式](https://github.com/user-attachments/assets/825669fd-a9e0-4b1e-8518-0a0e887ff744)
