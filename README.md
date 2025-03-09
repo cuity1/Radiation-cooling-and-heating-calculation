@@ -6,8 +6,6 @@
 ## 下载链接
 
 - **懒得看版本**：下载链接如下  
-  （快速通道, 密码 `1234`）：[https://wwja.lanzoue.com/b0knk1xve](https://wwja.lanzoue.com/b0knk1xve)
-  通过网盘分享的文件：辐射制冷软件
 链接: https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC 提取码: USTC 
 --来自百度网盘超级会员v5的分享
 
