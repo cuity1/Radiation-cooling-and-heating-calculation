@@ -10,7 +10,7 @@
 --来自百度网盘超级会员v5的分享
 
 - **魔法通道**：  
-  [GitHub Releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases)
+[  [GitHub Releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases)](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
 
 - **QQ群交流**：  
 
