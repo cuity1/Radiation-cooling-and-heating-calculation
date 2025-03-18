@@ -1,12 +1,14 @@
 # 辐射制冷与加热功率计算
-写在前面：
-更新了使用说明，记得看！
+>写在前面
+> 大气发射率请仅保留8-13或者其他波段，没用的数据请删掉
+
 
 
 
 
 > **ATTENTION**  
 > This software only supports Simplified Chinese
+
 
 ## 下载链接
 
