@@ -345,6 +345,9 @@ Radiation calculations involve complex physical models and numerical integration
 ### 5. How to interpret the Wind Speed vs. Cooling Efficiency Cloud Map?
 The colors in the cloud map represent the temperature difference (ΔT) under different combinations of wind speed and atmospheric emissivity. Darker colored areas indicate better cooling effects. Contour lines mark specific temperature difference values.
 
+### 6. 我该如何修改指定大气窗口波段？
+可以通过修改wavelength.csv，更改大气窗口波段从而更改需要拟合的大气透过率和样品发射率。
+
 ## 技术支持 (Technical Support)
 
 如果您在使用过程中遇到任何问题，或有任何建议，请联系软件开发者：
