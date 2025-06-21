@@ -203,6 +203,22 @@ This function is used to calculate the radiative heating power of the material u
 ### 风速与制冷效率云图 (Wind Speed vs. Cooling Efficiency Cloud Map)
 
 该功能用于分析风速对制冷效率的影响，并生成可视化云图。
+对于外部流动的对流换热，通常有以下情况：
+
+自然对流（无风或风速很小时）：
+
+对于垂直平板：Nu = 0.59 * Ra^0.25 (层流) 或 Nu = 0.1 * Ra^0.33 (湍流)
+对于水平平板：Nu = 0.54 * Ra^0.25 (层流) 或 Nu = 0.15 * Ra^0.33 (湍流)
+强制对流（有风时）
+对于平板：Nu = 0.664 * Re^0.5 * Pr^0.33 (层流) 或 Nu = 0.037 * Re^0.8 * Pr^0.33 (湍流)
+混合对流：
+当自然对流和强制对流都存在时，通常使用：h_total = sqrt(h_natural^n + h_forced^n)，其中n通常取3或4
+
+*所用到的公式：*
+层流强制对流：Nu = 0.664 × Re^0.5 × Pr^0.33
+湍流强制对流：Nu = 0.037 × Re^0.8 × Pr^0.33
+自然对流：Nu = 0.54 × Ra^0.25 (层流) 或 0.15 × Ra^0.33 (湍流)
+混合对流：h_total = (h_natural³ + h_forced³)^(1/3)
 
 This function is used to analyze the impact of wind speed on cooling efficiency and generate a visualization cloud map.
 
