@@ -374,6 +374,6 @@ If you encounter any problems during use, or have any suggestions, please contac
 
 Email: The email address specified in the EMAIL_CONTACT field of the config.ini file
 
-**备注：该软件为免费分享软件，如果使用此工具进行研究，请引用开发者的相关文章。**
-
+**备注：该软件为免费分享软件，如果使用此工具进行研究，希望能够引用开发者的相关文章。**
+https://pubs.acs.org/doi/10.1021/acs.nanolett.4c03139
 **Note: This software is shared for free. If you use this tool for research, please cite the developer's relevant articles.**
