@@ -9,7 +9,7 @@
 
 
 > **ATTENTION**  
-> This software only supports Simplified Chinese
+> This software supports English now
 
 
 ## 下载链接
