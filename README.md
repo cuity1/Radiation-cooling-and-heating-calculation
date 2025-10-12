@@ -3,9 +3,6 @@
 
 > **写在前面**  
 > V3.1版本修复了筛选机制
->  3.5版本辐射制冷计算的功率是正确的，但是绘图出现错误，原因是在修改计算逻辑的时候打错了个符号，反向计算了计算外界热流；目前已经删除该版本，经过核验其他版本没这个问题
-
-
 
 
 > **ATTENTION**  
@@ -14,19 +11,17 @@
 
 ## 下载链接
 
-- **懒得看版本**：下载链接如下  
+：下载链接如下  
 链接: https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC 提取码: USTC 
 --来自百度网盘超级会员v5的分享
 
-- **魔法通道**：  
 [  [GitHub Releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases)](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
 
 - **QQ群交流**：  
 
 [点击链接加入群聊【辐射制冷青椒交流群】](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318)
 
-> **温馨提示**  
-> 源代码写的很烂，已经上传，最好别让我发现有倒狗，不然不再更新优化
+
 
 ---
 
