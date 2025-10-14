@@ -492,13 +492,7 @@ Contributions are welcome! Please follow these guidelines:
 If you use this software in your research, please cite:
 
 ```bibtex
-@software{radiation_calculator_2024,
-  author = {CTY},
-  title = {Radiative Cooling/Heating Calculator},
-  year = {2024},
-  version = {3.5},
-  url = {https://gitee.com/cuity1999/Radiation-cooling-and-heating-calculation}
-}
+NO INFORMATION
 ```
 
 ### Support the Project
