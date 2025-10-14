@@ -1,374 +1,662 @@
-# 辐射制冷与加热功率计算
-
-
-> **写在前面**  
-> V3.1版本修复了筛选机制
-
-
-> **ATTENTION**  
-> This software supports English now
-
-
-## 下载链接
-
-：下载链接如下  
-链接: https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC 提取码: USTC 
---来自百度网盘超级会员v5的分享
-
-[  [GitHub Releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases)](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
-
-- **QQ群交流**：  
-
-[点击链接加入群聊【辐射制冷青椒交流群】](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318)
-
-
-
----
-
-## 项目简介
-
-本项目主要用于计算辐射制冷与加热功率，核心包括两个主函数：
-- `main_cooling_gui`：计算辐射冷却功率
-- `main_heating_gui`：计算辐射加热功率
-# 辐射制冷/制热计算工具使用说明书
-# Radiative Cooling/Heating Tool User Manual
-
-## 目录 (Contents)
-
-1. [概述 (Overview)](#概述-overview)
-2. [安装 (Installation)](#安装-installation)
-3. [主界面介绍 (Main Interface)](#主界面介绍-main-interface)
-4. [文件选择 (File Selection)](#文件选择-file-selection)
-5. [功能模块 (Function Modules)](#功能模块-function-modules)
-   - [节能地图绘制计算 (Energy Saving Map)](#节能地图绘制计算-energy-saving-map)
-   - [辐射制冷功率计算 (Cooling Power Calculation)](#辐射制冷功率计算-cooling-power-calculation)
-   - [辐射制热功率计算 (Heating Power Calculation)](#辐射制热功率计算-heating-power-calculation)
-   - [风速与制冷效率云图 (Wind Speed vs. Cooling Efficiency Cloud Map)](#风速与制冷效率云图-wind-speed-vs-cooling-efficiency-cloud-map)
-   - [参数修改 (Parameter Modification)](#参数修改-parameter-modification)
-   - [光热转化效率计算 (Photothermal Efficiency Calculation)](#光热转化效率计算-photothermal-efficiency-calculation)
-6. [数据格式要求 (Data Format Requirements)](#数据格式要求-data-format-requirements)
-7. [常见问题 (FAQ)](#常见问题-faq)
-8. [技术支持 (Technical Support)](#技术支持-technical-support)
-
-## 概述 (Overview)
-
-辐射制冷/制热计算工具是一款专为材料科学和能源领域研究人员设计的软件。它提供了全面的辐射制冷与制热性能分析功能，帮助用户计算材料的太阳光谱反射率、红外发射率以及在不同环境条件下的制冷/制热性能。
-
-The Radiative Cooling/Heating Tool is software designed for researchers in materials science and energy fields. It provides comprehensive analysis of radiative cooling and heating performance, helping users calculate solar spectral reflectance, infrared emissivity, and cooling/heating performance under different environmental conditions.
-
-## 安装 (Installation)
-
-本软件无需专门安装，可直接运行可执行文件启动。首次运行时，软件会自动创建必要的文件夹结构和默认配置文件。
-
-This software does not require specialized installation and can be launched directly by running the executable file. Upon first launch, the software will automatically create the necessary folder structure and default configuration files.
-
-### 系统要求 (System Requirements)
-
-- 操作系统：Windows 7/8/10/11
-- 内存：2GB 以上
-- 硬盘空间：50MB 以上
-
-- Operating System: Windows 7/8/10/11
-- Memory: 2GB or higher
-- Disk Space: 50MB or higher
-
-## 主界面介绍 (Main Interface)
-
-软件启动后将显示主界面，主界面分为以下几个部分：
-
-1. **标题区域**：显示软件名称
-2. **文件选择区域**：用于选择反射率、发射率和大气透过率数据文件
-3. **功能区域**：提供各种计算和分析功能的按钮
-4. **状态栏**：显示软件版权和联系信息
-
-After launching the software, the main interface will be displayed, which is divided into the following sections:
-
-1. **Title Area**: Displays the software name
-2. **File Selection Area**: For selecting reflectance, emissivity, and atmospheric transmittance data files
-3. **Function Area**: Provides buttons for various calculation and analysis functions
-4. **Status Bar**: Displays software copyright and contact information
-
-## 文件选择 (File Selection)
-
-在使用任何功能前，您需要先选择相关数据文件：
-
-Before using any function, you need to select the relevant data files:
-
-### 选择反射率文件 (Select Reflectance File)
-
-1. 点击"选择反射率文件"按钮
-2. 在弹出的文件对话框中选择包含反射率数据的文本文件（.txt格式）
-3. 文件格式要求：两列数据，第一列为波长（微米或纳米），第二列为反射率值（0-1之间或0-100%）
-
-1. Click the "Select Reflectance File" button
-2. Choose a text file containing reflectance data (.txt format) in the file dialog
-3. File format requirements: two columns of data, the first column for wavelength (in micrometers or nanometers), the second column for reflectance values (between 0-1 or 0-100%)
-
-### 选择发射率文件 (Select Emissivity File)
-
-1. 点击"选择发射率文件"按钮
-2. 在弹出的文件对话框中选择包含发射率数据的文本文件（.txt格式）
-3. 文件格式要求：两列数据，第一列为波长（微米或纳米），第二列为发射率值（0-1之间或0-100%）
-
-1. Click the "Select Emissivity File" button
-2. Choose a text file containing emissivity data (.txt format) in the file dialog
-3. File format requirements: two columns of data, the first column for wavelength (in micrometers or nanometers), the second column for emissivity values (between 0-1 or 0-100%)
-
-### 选择大气透过率 (Select Atmospheric Transmittance)
-
-1. 点击"选择大气透过率"按钮
-2. 在弹出的对话框中，您可以选择不同的大气条件：
-   - "晴朗"：适用于晴天条件下的大气透过率
-   - "少云"：适用于有少量云层时的大气透过率
-
-1. Click the "Select Atmospheric Transmittance" button
-2. In the dialog that appears, you can choose different atmospheric conditions:
-   - "Clear Sky": For atmospheric transmittance under clear sky conditions
-   - "Few Clouds": For atmospheric transmittance with a small amount of cloud cover
-
-## 功能模块 (Function Modules)
-
-本软件提供了六种主要功能，在选择了所需文件后，您可以使用以下功能：
-
-The software provides six main functions. After selecting the required files, you can use the following features:
-
-### 节能地图绘制计算 (Energy Saving Map)
-
-该功能用于计算材料的关键光学参数，为绘制节能地图提供数据。
-
-This function is used to calculate the key optical parameters of the material, providing data for energy saving map generation.
-
-**操作步骤 (Operation Steps):**
-1. 点击"节能地图绘制计算"按钮
-2. 软件将自动计算以下参数：
-   - 材料加权发射率
-   - 太阳光谱反射率
-   - 可见光谱反射率
-3. 计算结果将显示在界面上
-
-1. Click the "Energy Saving Map" button
-2. The software will automatically calculate the following parameters:
-   - Material weighted emissivity
-   - Solar spectral reflectance
-   - Visible spectral reflectance
-3. The calculation results will be displayed on the interface
-
-### 辐射制冷功率计算 (Cooling Power Calculation)
-
-该功能用于计算材料在特定环境条件下的辐射制冷功率。
-
-This function is used to calculate the radiative cooling power of the material under specific environmental conditions.
-
-**操作步骤 (Operation Steps):**
-1. 点击"辐射制冷功率计算"按钮
-2. 软件将进行复杂的计算，可能需要几分钟时间
-3. 计算完成后，将显示冷却功率结果
-4. 您可以选择：
-   - 预览冷却功率曲线：显示不同温差下的冷却功率变化
-   - 导出数据到CSV：将计算结果保存为CSV文件，以便进一步分析
-
-1. Click the "Cooling Power Calculation" button
-2. The software will perform complex calculations, which may take several minutes
-3. After calculation, the cooling power result will be displayed
-4. You can choose to:
-   - Preview the cooling power curve: Shows cooling power changes at different temperature differences
-   - Export data to CSV: Save calculation results as a CSV file for further analysis
-
-### 辐射制热功率计算 (Heating Power Calculation)
-
-该功能用于计算材料在特定环境条件下的辐射制热功率。
-
-This function is used to calculate the radiative heating power of the material under specific environmental conditions.
-
-**操作步骤 (Operation Steps):**
-1. 点击"辐射制热功率计算"按钮
-2. 软件将进行复杂的计算，可能需要几分钟时间
-3. 计算完成后，将显示加热功率结果
-4. 您可以选择：
-   - 绘制制热功率曲线：显示不同温差下的制热功率变化
-   - 导出数据到CSV：将计算结果保存为CSV文件，以便进一步分析
-
-1. Click the "Heating Power Calculation" button
-2. The software will perform complex calculations, which may take several minutes
-3. After calculation, the heating power result will be displayed
-4. You can choose to:
-   - Plot the heating power curve: Shows heating power changes at different temperature differences
-   - Export data to CSV: Save calculation results as a CSV file for further analysis
-
-### 风速与制冷效率云图 (Wind Speed vs. Cooling Efficiency Cloud Map)
-
-该功能用于分析风速对制冷效率的影响，并生成可视化云图。
-对于外部流动的对流换热，通常有以下情况：
-
-自然对流（无风或风速很小时）：
-
-对于垂直平板：Nu = 0.59 * Ra^0.25 (层流) 或 Nu = 0.1 * Ra^0.33 (湍流)
-对于水平平板：Nu = 0.54 * Ra^0.25 (层流) 或 Nu = 0.15 * Ra^0.33 (湍流)
-强制对流（有风时）
-对于平板：Nu = 0.664 * Re^0.5 * Pr^0.33 (层流) 或 Nu = 0.037 * Re^0.8 * Pr^0.33 (湍流)
-混合对流：
-当自然对流和强制对流都存在时，通常使用：h_total = sqrt(h_natural^n + h_forced^n)，其中n通常取3或4
-
-*所用到的公式：*
-层流强制对流：Nu = 0.664 × Re^0.5 × Pr^0.33
-湍流强制对流：Nu = 0.037 × Re^0.8 × Pr^0.33
-自然对流：Nu = 0.54 × Ra^0.25 (层流) 或 0.15 × Ra^0.33 (湍流)
-混合对流：h_total = (h_natural³ + h_forced³)^(1/3)
-
-This function is used to analyze the impact of wind speed on cooling efficiency and generate a visualization cloud map.
-
-**操作步骤 (Operation Steps):**
-1. 点击"风速与制冷效率云图"按钮
-2. 在弹出的对话框中输入太阳辐照度参数（单位：W/m²）
-3. 点击"生成云图"按钮
-4. 软件将计算并显示风速与大气发射率对温差的影响的云图
-5. 计算完成后，您可以保存结果数据到CSV文件
-
-1. Click the "Wind Speed vs. Cooling Efficiency Cloud Map" button
-2. Enter the solar irradiance parameter (unit: W/m²) in the dialog box
-3. Click the "Generate Cloud Map" button
-4. The software will calculate and display a cloud map showing the influence of wind speed and atmospheric emissivity on temperature difference
-5. After calculation, you can save the result data to a CSV file
-
-### 参数修改 (Parameter Modification)
-
-该功能允许用户修改软件的配置参数。
-
-This function allows users to modify the configuration parameters of the software.
-
-**操作步骤 (Operation Steps):**
-1. 点击"参数修改"按钮
-2. 在弹出的对话框中，您可以修改各种参数，如：
-   - 波长范围
-   - 物理常数
-   - 环境温度
-   - 其他计算参数
-3. 修改完成后，点击"保存"按钮应用更改
-
-1. Click the "Parameter Modification" button
-2. In the dialog box, you can modify various parameters, such as:
-   - Wavelength range
-   - Physical constants
-   - Ambient temperature
-   - Other calculation parameters
-3. After modification, click the "Save" button to apply the changes
-
-### 光热转化效率计算 (Photothermal Efficiency Calculation)
-
-该功能用于计算材料在不同环境温度下的光热转化效率与太阳辐照度的关系。
-
-This function is used to calculate the relationship between photothermal conversion efficiency and solar irradiance at different ambient temperatures.
-
-**操作步骤 (Operation Steps):**
-1. 点击"光热转化效率计算"按钮
-2. 软件将自动计算在环境温度从-100°C到100°C范围内，材料的理论辐射制热功率与太阳辐照度之间的关系
-3. 计算完成后，将显示关系曲线图
-4. 您可以选择保存结果数据到CSV文件
-
-1. Click the "Photothermal Efficiency Calculation" button
-2. The software will automatically calculate the relationship between theoretical radiative heating power and solar irradiance in the ambient temperature range from -100°C to 100°C
-3. After calculation, the relationship curve will be displayed
-4. You can choose to save the result data to a CSV file
-
-## 数据格式要求 (Data Format Requirements)
-
-为确保软件正常工作，您的数据文件需要满足以下格式要求：
-
-To ensure the software works properly, your data files need to meet the following format requirements:
-
-### 反射率文件 (Reflectance File)
-- 纯文本格式（.txt）
-- 两列数据：波长和反射率
-- 波长单位可以是微米或纳米（软件会自动识别并转换）
-- 反射率值可以是0-1之间或0-100%（软件会自动识别并转换）
-- 不含标题行或其他文字说明
-
-- Plain text format (.txt)
-- Two columns of data: wavelength and reflectance
-- Wavelength unit can be in micrometers or nanometers (software will automatically recognize and convert)
-- Reflectance values can be between 0-1 or 0-100% (software will automatically recognize and convert)
-- No header row or other text descriptions
-
-### 发射率文件 (Emissivity File)
-- 纯文本格式（.txt）
-- 两列数据：波长和发射率
-- 波长单位可以是微米或纳米（软件会自动识别并转换）
-- 发射率值可以是0-1之间或0-100%（软件会自动识别并转换）
-- 不含标题行或其他文字说明
-
-- Plain text format (.txt)
-- Two columns of data: wavelength and emissivity
-- Wavelength unit can be in micrometers or nanometers (software will automatically recognize and convert)
-- Emissivity values can be between 0-1 or 0-100% (software will automatically recognize and convert)
-- No header row or other text descriptions
-
-### 数据示例 (Data Examples)
-
-**反射率文件示例 (Reflectance File Example):**
-```
-0.3 0.85
-0.4 0.87
-0.5 0.89
-0.6 0.90
-0.7 0.92
-...
-```
-
-**发射率文件示例 (Emissivity File Example):**
-```
-5.0 0.90
-6.0 0.91
-7.0 0.92
-8.0 0.93
-9.0 0.95
-...
-```
-
-## 常见问题 (FAQ)
-
-### 1. 软件显示"未选择文件"错误怎么办？
-确保您已经选择了所有必需的文件：反射率文件、发射率文件和大气透过率。每个按钮下方的状态文本应该显示"已选择文件"而不是"未选择"。
-
-### 1. What should I do if the software shows a "File not selected" error?
-Make sure you have selected all the required files: reflectance file, emissivity file, and atmospheric transmittance. The status text under each button should display "Selected" instead of "Not selected".
-
-### 2. 计算结果为什么显示异常值？
-请检查您的数据文件格式是否正确。确保文件中只包含数值数据，没有标题行或文字说明。另外，检查数值范围是否合理，比如反射率和发射率应在0-1之间或0-100%之间。
-
-### 2. Why does the calculation result show abnormal values?
-Please check if your data file format is correct. Make sure the file contains only numerical data, without header rows or text descriptions. Also, check if the value range is reasonable, for example, reflectance and emissivity should be between 0-1 or 0-100%.
-
-### 3. 如何调整环境温度等参数？
-使用"参数修改"功能，您可以调整环境温度、波长范围和其他计算参数。
-
-### 3. How to adjust parameters such as ambient temperature?
-Use the "Parameter Modification" function, you can adjust ambient temperature, wavelength range, and other calculation parameters.
-
-### 4. 软件计算速度较慢怎么办？
-辐射计算涉及复杂的物理模型和数值积分，因此某些功能（如制冷/制热功率计算）可能需要较长时间。请耐心等待计算完成。
-
-### 4. What if the software calculates slowly?
-Radiation calculations involve complex physical models and numerical integration, so some functions (such as cooling/heating power calculation) may take longer. Please wait patiently for the calculation to complete.
-
-### 5. 如何解释风速与制冷效率云图？
-云图中的颜色表示不同风速和大气发射率组合下的温差（ΔT）。颜色越深的区域表示制冷效果越好。等值线标注了具体的温差值。
-
-### 5. How to interpret the Wind Speed vs. Cooling Efficiency Cloud Map?
-The colors in the cloud map represent the temperature difference (ΔT) under different combinations of wind speed and atmospheric emissivity. Darker colored areas indicate better cooling effects. Contour lines mark specific temperature difference values.
-
-### 6. 我该如何修改指定大气窗口波段？
-可以通过修改wavelength.csv，更改大气窗口波段从而更改需要拟合的大气透过率和样品发射率。
-
-## 技术支持 (Technical Support)
-
-如果您在使用过程中遇到任何问题，或有任何建议，请联系软件开发者：
-
-If you encounter any problems during use, or have any suggestions, please contact the software developer:
-
-邮箱：config.ini文件中EMAIL_CONTACT字段指定的邮箱地址
-
-Email: The email address specified in the EMAIL_CONTACT field of the config.ini file
-
-**备注：该软件为免费分享软件，如果使用此工具进行研究，希望能够引用开发者的相关文章。**
-https://pubs.acs.org/doi/10.1021/acs.nanolett.4c03139
-**Note: This software is shared for free. If you use this tool for research, please cite the developer's relevant articles.**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radiative Cooling/Heating Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: -40px -20px 40px -20px;
+            border-radius: 0 0 30px 30px;
+        }
+
+        h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin: 50px 0 25px 0;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e8ecf1;
+        }
+
+        h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin: 35px 0 20px 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin: 0 0 15px 0;
+        }
+
+        .formula-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            border-left: 4px solid #764ba2;
+            overflow-x: auto;
+        }
+
+        .principle-section {
+            background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border: 2px solid #f8c471;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin: 5px 5px 5px 0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .contact-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            color: white;
+            border-bottom: 3px solid rgba(255,255,255,0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e8ecf1;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌡️ Radiative Cooling/Heating Calculator</h1>
+            <p class="subtitle">Advanced Computational Tool for Thermal Radiation Analysis</p>
+            <div style="margin-top: 20px;">
+                <span class="badge">Python</span>
+                <span class="badge">PyQt5</span>
+                <span class="badge">Thermal Physics</span>
+                <span class="badge">Computational</span>
+            </div>
+        </header>
+
+        <section>
+            <h2>📖 Overview</h2>
+            <p>
+                The Radiative Cooling/Heating Calculator is a sophisticated computational tool designed for researchers and engineers 
+                working in thermal management, building energy efficiency, and advanced material science. This software provides 
+                accurate calculations of radiative heat transfer, incorporating solar radiation, atmospheric effects, and material 
+                optical properties.
+            </p>
+        </section>
+
+        <section>
+            <h2>✨ Key Features</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="icon">❄️</div>
+                    <h3>Radiative Cooling</h3>
+                    <p>Calculate cooling power using atmospheric transparency window (8-13 μm) with precise spectral integration</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🔥</div>
+                    <h3>Radiative Heating</h3>
+                    <p>Compute heating power considering solar absorption and atmospheric downward radiation</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🗺️</div>
+                    <h3>Energy Mapping</h3>
+                    <p>Generate energy efficiency maps for various geographical and climate conditions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">💨</div>
+                    <h3>Convection Analysis</h3>
+                    <p>Wind speed effects on cooling efficiency with Reynolds and Nusselt number calculations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📊</div>
+                    <h3>Data Visualization</h3>
+                    <p>Interactive plots and contour maps for comprehensive thermal analysis</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🔧</div>
+                    <h3>Material Properties</h3>
+                    <p>Customizable spectral emissivity and reflectance for various materials</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>🔬 Physical Principles</h2>
+            
+            <div class="principle-section">
+                <h3>1. Planck's Law of Blackbody Radiation</h3>
+                <p>The spectral radiance of a blackbody at temperature T is given by:</p>
+                <div class="formula-box">
+                    \[
+                    I_{BB}(\lambda, T) = \frac{2hc^2}{\lambda^5} \frac{1}{e^{\frac{hc}{\lambda k_B T}} - 1}
+                    \]
+                </div>
+                <p>Where:</p>
+                <ul>
+                    <li>\(h = 6.626 \times 10^{-34}\) J·s (Planck's constant)</li>
+                    <li>\(c = 2.998 \times 10^8\) m/s (speed of light)</li>
+                    <li>\(k_B = 1.381 \times 10^{-23}\) J/K (Boltzmann constant)</li>
+                    <li>\(\lambda\) = wavelength (m)</li>
+                    <li>\(T\) = temperature (K)</li>
+                </ul>
+            </div>
+
+            <div class="principle-section">
+                <h3>2. Net Radiative Cooling Power</h3>
+                <p>The net cooling power of a radiative cooler is calculated as:</p>
+                <div class="formula-box">
+                    \[
+                    P_{cool}(T) = P_{rad}(T) - P_{atm}(T_{amb}) - P_{solar} - P_{conv}
+                    \]
+                </div>
+                <p>Where each component is:</p>
+                
+                <h4>a) Radiative Power (Upward)</h4>
+                <div class="formula-box">
+                    \[
+                    P_{rad}(T) = \int_0^{2\pi} d\phi \int_0^{\pi/2} \cos\theta \sin\theta \, d\theta \int_{\lambda_1}^{\lambda_2} \varepsilon(\lambda, \theta) I_{BB}(\lambda, T) \, d\lambda
+                    \]
+                </div>
+
+                <h4>b) Atmospheric Radiation (Downward)</h4>
+                <div class="formula-box">
+                    \[
+                    P_{atm}(T_{amb}) = \int_0^{2\pi} d\phi \int_0^{\pi/2} \cos\theta \sin\theta \, d\theta \int_{\lambda_1}^{\lambda_2} \varepsilon(\lambda, \theta) \varepsilon_{atm}(\lambda, \theta) I_{BB}(\lambda, T_{amb}) \, d\lambda
+                    \]
+                </div>
+                <p>Where atmospheric emissivity is derived from transmittance:</p>
+                <div class="formula-box">
+                    \[
+                    \varepsilon_{atm}(\lambda, \theta) = 1 - \tau(\lambda)^{\sec\theta}
+                    \]
+                </div>
+
+                <h4>c) Solar Absorption</h4>
+                <div class="formula-box">
+                    \[
+                    P_{solar} = \alpha_s \cdot I_{solar}
+                    \]
+                </div>
+                <p>Where \(\alpha_s\) is the solar absorptance:</p>
+                <div class="formula-box">
+                    \[
+                    \alpha_s = 1 - R_{sol} = 1 - \frac{\int_{0.3}^{2.5} R(\lambda) I_{AM1.5}(\lambda) d\lambda}{\int_{0.3}^{2.5} I_{AM1.5}(\lambda) d\lambda}
+                    \]
+                </div>
+
+                <h4>d) Convective Heat Transfer</h4>
+                <div class="formula-box">
+                    \[
+                    P_{conv} = h_c \cdot (T - T_{amb})
+                    \]
+                </div>
+            </div>
+
+            <div class="principle-section">
+                <h3>3. Convection Coefficient Calculation</h3>
+                <p>The convection coefficient combines natural and forced convection:</p>
+                
+                <h4>Natural Convection (Rayleigh Number)</h4>
+                <div class="formula-box">
+                    \[
+                    Ra = \frac{g\beta \Delta T L^3}{\nu \alpha} = Gr \cdot Pr
+                    \]
+                </div>
+                <div class="formula-box">
+                    \[
+                    Nu_{nat} = \begin{cases}
+                    0.54 \cdot Ra^{1/4} & Ra < 10^7 \text{ (laminar)} \\
+                    0.15 \cdot Ra^{1/3} & Ra > 10^7 \text{ (turbulent)}
+                    \end{cases}
+                    \]
+                </div>
+
+                <h4>Forced Convection (Reynolds Number)</h4>
+                <div class="formula-box">
+                    \[
+                    Re = \frac{v L}{\nu}
+                    \]
+                </div>
+                <div class="formula-box">
+                    \[
+                    Nu_{forced} = \begin{cases}
+                    0.664 \cdot Re^{1/2} \cdot Pr^{1/3} & Re < 5 \times 10^5 \text{ (laminar)} \\
+                    0.037 \cdot Re^{4/5} \cdot Pr^{1/3} & Re > 5 \times 10^5 \text{ (turbulent)}
+                    \end{cases}
+                    \]
+                </div>
+
+                <h4>Combined Convection</h4>
+                <div class="formula-box">
+                    \[
+                    h_c = (h_{nat}^n + h_{forced}^n)^{1/n}, \quad n = 3
+                    \]
+                </div>
+            </div>
+
+            <div class="principle-section">
+                <h3>4. Average Emissivity</h3>
+                <p>Temperature-weighted average emissivity:</p>
+                <div class="formula-box">
+                    \[
+                    \bar{\varepsilon}(T) = \frac{\int_{\lambda_1}^{\lambda_2} \varepsilon(\lambda) I_{BB}(\lambda, T) d\lambda}{\int_{\lambda_1}^{\lambda_2} I_{BB}(\lambda, T) d\lambda}
+                    \]
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>🖥️ Computational Features</h2>
+            
+            <h3>Spectral Integration</h3>
+            <div class="info-box">
+                <strong>Angular Integration:</strong> The software uses adaptive quadrature with 100+ angular points from 0° to 90° 
+                to accurately capture the hemispherical integration of radiation.
+            </div>
+            
+            <div class="info-box">
+                <strong>Wavelength Integration:</strong> Trapezoidal integration over user-defined spectral ranges with automatic 
+                interpolation of material properties.
+            </div>
+
+            <h3>Material Property Processing</h3>
+            <ul>
+                <li>Automatic wavelength unit conversion (nm to μm)</li>
+                <li>Spectral data interpolation using scipy's interp1d</li>
+                <li>Multi-encoding file support (UTF-8, GBK, GB2312)</li>
+                <li>Validation of spectral data ranges and consistency</li>
+            </ul>
+
+            <h3>Numerical Methods</h3>
+            <table>
+                <tr>
+                    <th>Method</th>
+                    <th>Application</th>
+                    <th>Accuracy</th>
+                </tr>
+                <tr>
+                    <td>Trapezoidal Rule</td>
+                    <td>Spectral integration</td>
+                    <td>O(Δλ²)</td>
+                </tr>
+                <tr>
+                    <td>Brent's Method</td>
+                    <td>Root finding for equilibrium temperature</td>
+                    <td>Machine precision</td>
+                </tr>
+                <tr>
+                    <td>Linear Interpolation</td>
+                    <td>Spectral data resampling</td>
+                    <td>O(Δλ)</td>
+                </tr>
+                <tr>
+                    <td>Minimize Scalar</td>
+                    <td>Optimization for approximate solutions</td>
+                    <td>Configurable tolerance</td>
+                </tr>
+            </table>
+        </section>
+
+        <section>
+            <h2>⚙️ Installation</h2>
+            
+            <h3>Requirements</h3>
+            <pre><code>Python >= 3.7
+PyQt5 >= 5.15
+numpy >= 1.19
+scipy >= 1.5
+pandas >= 1.1
+matplotlib >= 3.3
+openpyxl >= 3.0</code></pre>
+
+            <h3>Installation Steps</h3>
+            <div class="warning-box">
+                <strong>Note:</strong> Ensure all required data files are present in the <code>default/</code> directory before running.
+            </div>
+
+            <pre><code># Clone the repository
+git clone https://github.com/yourusername/radiation-calculator.git
+cd radiation-calculator
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application
+python main.py</code></pre>
+        </section>
+
+        <section>
+            <h2>📁 Required Data Files</h2>
+            <table>
+                <tr>
+                    <th>File</th>
+                    <th>Description</th>
+                    <th>Format</th>
+                </tr>
+                <tr>
+                    <td>config.ini</td>
+                    <td>Configuration parameters and physical constants</td>
+                    <td>INI</td>
+                </tr>
+                <tr>
+                    <td>AM1.5.dll</td>
+                    <td>Standard solar spectrum (AM1.5G)</td>
+                    <td>Excel</td>
+                </tr>
+                <tr>
+                    <td>wavelength.csv</td>
+                    <td>Wavelength grid for calculations</td>
+                    <td>CSV</td>
+                </tr>
+                <tr>
+                    <td>reflectance.txt</td>
+                    <td>Material spectral reflectance (0.3-2.5 μm)</td>
+                    <td>TXT (2 columns)</td>
+                </tr>
+                <tr>
+                    <td>emissivity.txt</td>
+                    <td>Material spectral emissivity (8-13 μm)</td>
+                    <td>TXT (2 columns)</td>
+                </tr>
+                <tr>
+                    <td>1.dll / 2.dll</td>
+                    <td>Atmospheric transmittance (clear/cloudy)</td>
+                    <td>Excel</td>
+                </tr>
+            </table>
+        </section>
+
+        <section>
+            <h2>🎯 Usage Examples</h2>
+            
+            <h3>1. Basic Cooling Power Calculation</h3>
+            <ol>
+                <li>Select material reflectance file (visible to near-IR range)</li>
+                <li>Select material emissivity file (mid-IR atmospheric window)</li>
+                <li>Choose atmospheric conditions (clear sky or cloudy)</li>
+                <li>Click "Radiation Cooling Power" to calculate</li>
+                <li>View results and export data as needed</li>
+            </ol>
+
+            <h3>2. Energy Map Generation</h3>
+            <ol>
+                <li>Prepare material property files</li>
+                <li>Click "Energy Map Calculation"</li>
+                <li>Obtain weighted emissivity and solar reflectance</li>
+                <li>Use parameters for regional energy modeling</li>
+            </ol>
+
+            <h3>3. Wind Speed Analysis</h3>
+            <ol>
+                <li>Load all required material files</li>
+                <li>Select "Wind Speed & Cooling Efficiency"</li>
+                <li>Input solar irradiance value (W/m²)</li>
+                <li>Generate 2D contour maps showing cooling power vs. wind speed and atmospheric emissivity</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>📊 Output Parameters</h2>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <h3>Cooling Power</h3>
+                    <p>Net radiative cooling power (W/m²) at ambient temperature</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Heating Power</h3>
+                    <p>Net radiative heating power (W/m²) including solar gains</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Solar Absorptance</h3>
+                    <p>Weighted solar absorptance (0.3-2.5 μm)</p>
+                </div>
+                <div class="feature-card">
+                    <h3>IR Emissivity</h3>
+                    <p>Temperature-weighted emissivity (8-13 μm)</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Convection Coefficient</h3>
+                    <p>h_c (W/m²·K) as function of wind speed and ΔT</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Cloud Maps</h3>
+                    <p>2D parametric plots for design optimization</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>🔧 Advanced Features</h2>
+            
+            <h3>Configuration Editor</h3>
+            <p>Built-in editor for modifying calculation parameters:</p>
+            <ul>
+                <li>Physical constants (h, c, k_B)</li>
+                <li>Temperature ranges for calculations</li>
+                <li>Wavelength integration bounds</li>
+                <li>Convection coefficient values</li>
+                <li>Solar irradiance intensity</li>
+            </ul>
+
+            <h3>File Converter Tool</h3>
+            <p>Excel to TXT converter for spectral data preparation:</p>
+            <ul>
+                <li>Extracts first two columns automatically</li>
+                <li>Handles multiple encoding formats</li>
+                <li>Validates data structure</li>
+            </ul>
+
+            <h3>Multi-language Support</h3>
+            <p>Interface available in Chinese and English with dynamic switching</p>
+        </section>
+
+        <section>
+            <h2>📈 Validation & Accuracy</h2>
+            
+            <div class="info-box">
+                <h3>Key Considerations:</h3>
+                <ul>
+                    <li><strong>Spectral Resolution:</strong> Calculations use user-provided spectral data. Higher resolution improves accuracy.</li>
+                    <li><strong>Angular Integration:</strong> 100+ points ensure convergence for hemispherical integration (tested error < 0.5%)</li>
+                    <li><strong>Temperature Range:</strong> Valid from -100°C to +100°C for typical materials</li>
+                    <li><strong>Wavelength Coverage:</strong> Solar (0.3-2.5 μm) and IR (8-13 μm) windows are critical</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <strong>Important:</strong> Results are most accurate when:
+                <ul>
+                    <li>Material properties are measured with calibrated instruments</li>
+                    <li>Atmospheric conditions match standard profiles</li>
+                    <li>Surface is diffuse (Lambertian assumption)</li>
+                    <li>Steady-state conditions are assumed</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>📚 References</h2>
+            <ol>
+                <li>Raman, A. P., et al. "Passive radiative cooling below ambient air temperature under direct sunlight." <em>Nature</em> 515.7528 (2014): 540-544.</li>
+                <li>Zhao, Dongliang, et al. "Radiative sky cooling: Fundamental principles, materials, and applications." <em>Applied Physics Reviews</em> 6.2 (2019): 021306.</li>
+                <li>Incropera, F. P., et al. <em>Fundamentals of Heat and Mass Transfer</em>. 7th ed. Wiley, 2011.</li>
+                <li>Bergman, T. L., et al. <em>Introduction to Heat Transfer</em>. 6th ed. Wiley, 2011.</li>
+                <li>Siegel, R., and J. R. Howell. <em>Thermal Radiation Heat Transfer</em>. 5th ed. CRC Press, 2010.</li>
+            </ol>
+        </section>
+
+        <div class="contact-section">
+            <h2>📬 Contact & Citation</h2>
+            <p style="margin-top: 20px; font-size: 1.1em;">
+                If you use this tool in your research, please cite our work and contact the author for collaboration opportunities.
+            </p>
+            <p style="margin-top: 15px;">
+                <strong>QQ Group:</strong> 767753318<br>
+                <strong>WeChat:</strong> cuity_<br>
+                <strong>Repository:</strong> <a href="https://gitee.com/cuity1999/Radiation-cooling-and-heating-calculation" style="color: white; text-decoration: underline;">Gitee</a>
+            </p>
+            <p style="margin-top: 25px; opacity: 0.9;">
+                This software is provided free for academic and research purposes. Commercial use requires permission.
+            </p>
+        </div>
+
+        <footer style="text-align: center; padding: 30px 0; color: #7f8c8d; margin-top: 50px; border-top: 2px solid #e8ecf1;">
+            <p>© 2024 Radiative Cooling/Heating Calculator | Version 3.5</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Made with ❤️ for the thermal sciences community</p>
+        </footer>
+    </div>
+</body>
+</html>
