@@ -22,6 +22,15 @@ The Radiative Cooling/Heating Calculator provides accurate calculations of radia
 
 ---
 
+
+😋How to download
+
+https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC
+
+[  [GitHub Releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases)](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
+
+[点击链接加入群聊【辐射制冷青椒交流群】](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318)
+
 ## ✨ Key Features
 
 | Feature | Description |
