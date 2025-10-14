@@ -404,12 +404,7 @@ Switch between Chinese and English:
 
 ⚠️ **Standard Atmosphere:** Uses MODTRAN-based profiles
 
-### Comparison with Literature
 
-| Reference | Method | Cooling Power | This Software |
-|-----------|--------|---------------|---------------|
-| Raman et al. (2014) | Experiment | 40-50 W/m² | 42-48 W/m² |
-| Zhao et al. (2019) | Simulation | 80-100 W/m² | 85-95 W/m² |
 
 ---
 
