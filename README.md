@@ -548,13 +548,15 @@ Coming soon: Video tutorials covering:
 ---
 
 ## 🔄 Version History
-
-### Version 3.5 (Current)
+### Version 3.6 (NEXT Plan)
+- 😋 Add energy-saving map drawing function (this will be charged)
+  
+### Version 3.6 (Current)
 - ✨ Added atmospheric emissivity-solar irradiance cloud map
-- 🐛 Fixed convection coefficient calculation for mixed regime
+- ✨ Fix the logic of drawing preview
+  
+### Version 3.5 
 - 🌐 Improved multi-language support
-- 📊 Enhanced data export with Excel multi-sheet support
-- ⚡ Performance optimization for large spectral datasets
 
 ### Version 3.0
 - Added wind speed analysis with Churchill-Usagi correlation
