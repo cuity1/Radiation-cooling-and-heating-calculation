@@ -548,8 +548,8 @@ Coming soon: Video tutorials covering:
 ---
 
 ## 🔄 Version History
-### Version 3.6 (NEXT Plan)
-- 😋 Add energy-saving map drawing function (this will be charged)
+### Version 4.0 (NEXT Plan)
+- 😋 Add energy-saving map drawing function (this will be soon)
   
 ### Version 3.6 (Current)
 - ✨ Added atmospheric emissivity-solar irradiance cloud map
