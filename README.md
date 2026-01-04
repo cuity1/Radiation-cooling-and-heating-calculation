@@ -165,9 +165,7 @@ The code discretizes the hemisphere $\theta\in[0,\pi/2)$ with:
 - $d\theta$ uniform
 - solid-angle factor (Lambertian weighting):
 
-$$
-\text{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta
-$$
+$$\text{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta$$
 
 This factor is later multiplied by the spectral integral to obtain hemispherical power.
 
