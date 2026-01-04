@@ -1,592 +1,541 @@
-# 🌡️ Radiative Cooling/Heating Calculator
+<!--
+  README is bilingual (中文/English).
+  GitHub does not support real "button" toggles in pure Markdown.
+  This README uses a GitHub-friendly language switcher via anchor links.
+-->
 
-[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/downloads/)
-[![PyQt5](https://img.shields.io/badge/PyQt5-5.15+-green.svg)](https://pypi.org/project/PyQt5/)
+<div align="center">
+
+# Radiative Cooling & Heating Calculator  
+# 辐射制冷/制热计算器
+
+**A research-grade tool to compute radiative cooling/heating power from spectral optical data and atmospheric models**  
+**面向科研的辐射制冷/制热功率计算工具：基于材料光谱与大气模型进行精确积分计算**
+
+<a href="#english">English</a> • <a href="#chinese">中文</a>
+
+[![Python](https://img.shields.io/badge/Python-3.7%2B-blue.svg)](https://www.python.org/downloads/)
+[![PyQt5](https://img.shields.io/badge/PyQt5-5.15%2B-green.svg)](https://pypi.org/project/PyQt5/)
 [![License](https://img.shields.io/badge/License-Academic-orange.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-3.5-red.svg)](https://github.com/yourusername/radiation-calculator)
 
-> **Advanced Computational Tool for Thermal Radiation Analysis**
-
-A sophisticated software package for calculating radiative cooling and heating power, designed for researchers and engineers in thermal management, building energy efficiency, and advanced material science.
+</div>
 
 ---
 
-## 📖 Overview
+## English
 
-The Radiative Cooling/Heating Calculator provides accurate calculations of radiative heat transfer by incorporating:
-- 🌅 Solar radiation (AM1.5G spectrum)
-- 🌍 Atmospheric transparency windows (8-13 μm)
-- 🔬 Material optical properties (spectral emissivity/reflectance)
-- 💨 Convection effects (natural and forced)
-- 📊 Multi-dimensional parametric analysis
+### What is this?
+This repository provides a **PyQt-based GUI** and **Python core library** for computing:
 
----
+- **Net radiative cooling power** (daytime/nighttime)
+- **Net radiative heating power**
+- **Solar-weighted reflectance / absorptance** (AM1.5 spectrum)
+- **Temperature-weighted average emissivity**
+- **Convection (natural + forced, Churchill–Usagi blending)**
+- Parameter sweeps and plot-ready power decomposition
 
+The implementation is designed to be practical for materials research (spectral selectivity), thermal management, and building energy applications.
 
+### Download
+- Baidu Netdisk: https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC
+- GitHub Releases: https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases
 
-## ✔ How to Download
-
-https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC
-
-[  [GitHub Releases](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases/tag/releases)](https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases)
-
-
-[点击链接加入群聊【辐射制冷青椒交流群】](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318)
-
-## ✨ Key Features
-
-| Feature | Description |
-|---------|-------------|
-| **❄️ Radiative Cooling** | Calculate cooling power using atmospheric transparency window with precise spectral integration |
-| **🔥 Radiative Heating** | Compute heating power considering solar absorption and atmospheric downward radiation |
-| **🗺️ Energy Mapping** | Generate energy efficiency maps for geographical and climate analysis |
-| **💨 Convection Analysis** | Wind speed effects on cooling efficiency with Reynolds and Nusselt correlations |
-| **📊 Data Visualization** | Interactive plots, contour maps, and 3D parametric surfaces |
-| **🔧 Material Properties** | Customizable spectral emissivity and reflectance for various materials |
-| **🌐 Multi-language** | Interface in Chinese and English with dynamic switching |
-| **⚙️ Configuration Editor** | Built-in editor for modifying calculation parameters |
+Community group:
+- QQ group: http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318
 
 ---
 
-## 🔬 Physical Principles
-
-### 1. Planck's Law of Blackbody Radiation
-
-The spectral radiance of a blackbody at temperature $T$ is given by:
-
-$$
-I_{BB}(\lambda, T) = \frac{2hc^2}{\lambda^5} \frac{1}{e^{\frac{hc}{\lambda k_B T}} - 1}
-$$
-
-**Where:**
-- $h = 6.626 \times 10^{-34}$ J·s (Planck's constant)
-- $c = 2.998 \times 10^8$ m/s (speed of light)
-- $k_B = 1.381 \times 10^{-23}$ J/K (Boltzmann constant)
-- $\lambda$ = wavelength (m)
-- $T$ = temperature (K)
-
-### 2. Net Radiative Cooling Power
-
-The net cooling power of a radiative cooler:
-
-$$
-P_{cool}(T) = P_{rad}(T) - P_{atm}(T_{amb}) - P_{solar} - P_{conv}
-$$
-
-#### a) Radiative Power (Upward)
-
-$$
-P_{rad}(T) = \int_0^{2\pi} d\phi \int_0^{\pi/2} \cos\theta \sin\theta \, d\theta \int_{\lambda_1}^{\lambda_2} \varepsilon(\lambda, \theta) I_{BB}(\lambda, T) \, d\lambda
-$$
-
-#### b) Atmospheric Radiation (Downward)
-
-$$
-P_{atm}(T_{amb}) = \int_0^{2\pi} d\phi \int_0^{\pi/2} \cos\theta \sin\theta \, d\theta \int_{\lambda_1}^{\lambda_2} \varepsilon(\lambda, \theta) \varepsilon_{atm}(\lambda, \theta) I_{BB}(\lambda, T_{amb}) \, d\lambda
-$$
-
-**Atmospheric emissivity** from Beer-Lambert law:
-
-$$
-\varepsilon_{atm}(\lambda, \theta) = 1 - \tau(\lambda)^{\sec\theta}
-$$
-
-#### c) Solar Absorption
-
-$$
-P_{solar} = \alpha_s \cdot I_{solar}
-$$
-
-**Solar absorptance** (weighted over AM1.5G spectrum):
-
-$$
-\alpha_s = 1 - R_{sol} = 1 - \frac{\int_{0.3}^{2.5} R(\lambda) I_{AM1.5}(\lambda) d\lambda}{\int_{0.3}^{2.5} I_{AM1.5}(\lambda) d\lambda}
-$$
-
-#### d) Convective Heat Transfer
-
-$$
-P_{conv} = h_c \cdot (T - T_{amb})
-$$
-
-### 3. Convection Coefficient Calculation
-
-#### Natural Convection
-
-**Rayleigh number:**
-
-$$
-Ra = \frac{g\beta \Delta T L^3}{\nu \alpha} = Gr \cdot Pr
-$$
-
-**Nusselt number:**
-
-$$
-Nu_{nat} = \begin{cases}
-0.54 \cdot Ra^{1/4} & Ra < 10^7 \text{ (laminar)} \\
-0.15 \cdot Ra^{1/3} & Ra > 10^7 \text{ (turbulent)}
-\end{cases}
-$$
-
-#### Forced Convection
-
-**Reynolds number:**
-
-$$
-Re = \frac{v L}{\nu}
-$$
-
-**Nusselt number:**
-
-$$
-Nu_{forced} = \begin{cases}
-0.664 \cdot Re^{1/2} \cdot Pr^{1/3} & Re < 5 \times 10^5 \text{ (laminar)} \\
-0.037 \cdot Re^{4/5} \cdot Pr^{1/3} & Re > 5 \times 10^5 \text{ (turbulent)}
-\end{cases}
-$$
-
-#### Combined Convection (Churchill-Usagi Method)
-
-$$
-h_c = (h_{nat}^n + h_{forced}^n)^{1/n}, \quad n = 3
-$$
-
-### 4. Temperature-Weighted Average Emissivity
-
-$$
-\bar{\varepsilon}(T) = \frac{\int_{\lambda_1}^{\lambda_2} \varepsilon(\lambda) I_{BB}(\lambda, T) d\lambda}{\int_{\lambda_1}^{\lambda_2} I_{BB}(\lambda, T) d\lambda}
-$$
-
----
-
-## 🖥️ Computational Features
-
-### Numerical Integration
-
-| Method | Application | Accuracy |
-|--------|-------------|----------|
-| **Trapezoidal Rule** | Spectral integration | $O(\Delta\lambda^2)$ |
-| **Brent's Method** | Root finding for equilibrium | Machine precision |
-| **Linear Interpolation** | Spectral resampling | $O(\Delta\lambda)$ |
-| **Minimize Scalar** | Optimization for solutions | Configurable tolerance |
-
-### Integration Parameters
-
-- **Angular Integration:** 100+ discrete points from 0° to 90°
-- **Wavelength Integration:** User-defined spectral ranges with automatic interpolation
-- **Convergence Criteria:** Iterative solving with $\Delta T < 0.01$ K
-
-### Material Property Processing
-
-- ✅ Automatic wavelength unit conversion (nm ↔ μm)
-- ✅ Multi-encoding file support (UTF-8, GBK, GB2312)
-- ✅ Spectral data validation and error handling
-- ✅ Interpolation using `scipy.interpolate.interp1d`
-
----
-
-## ⚙️ Installation
-
-### System Requirements
+## Project structure
 
 ```
-Python >= 3.7
-PyQt5 >= 5.15
-numpy >= 1.19
-scipy >= 1.5
-pandas >= 1.1
-matplotlib >= 3.3
-openpyxl >= 3.0
+.
+├─ core/                   # Non-GUI computational core (physics + spectrum + integrations)
+│  ├─ calculations.py       # High-level calculation entry points used by GUI
+│  ├─ physics.py            # Physical models (Planck, emissivity avg, convection)
+│  ├─ spectrum.py           # Data loading + interpolation + weighted integrals
+│  ├─ plots.py              # Plot helpers (if used)
+│  └─ ...
+├─ gui/                     # PyQt GUI, dialogs, threads, i18n
+├─ default/                 # Default datasets (AM1.5, wavelength grid, atmos profiles, config)
+├─ main.py / main_Qt.py     # Launchers
+└─ README.md
 ```
 
-### Installation Steps
+---
 
+## Quick start
+
+### 1) Environment
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/radiation-calculator.git
-cd radiation-calculator
-
-# Create virtual environment (recommended)
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+# Windows: venv\Scripts\activate
+# macOS/Linux:
+#   source venv/bin/activate
 pip install -r requirements.txt
+```
 
-# Run the application
+> If `requirements.txt` is not present in your fork, install the typical stack: `numpy scipy pandas matplotlib openpyxl PyQt5`.
+
+### 2) Run GUI
+```bash
 python main.py
 ```
 
-### Requirements File
+---
 
-Create `requirements.txt`:
+## Inputs & data conventions
+
+Most computations depend on **six files** (selected in the GUI):
+
+| Key | Typical file | Meaning |
+|---|---|---|
+| `config` | `default/config.ini` | constants, wavelength ranges, temperature ranges, h-values, etc. |
+| `reflectance` | (txt/csv) | spectral reflectance R(λ) (solar band) |
+| `spectrum` | `default/AM1.5.xlsx` | solar spectrum I(λ) |
+| `wavelength` | `default/Wavelength.csv` | wavelength grid for IR window interpolation |
+| `emissivity` | (txt) | material emissivity ε(λ) (IR window) |
+| `atm_emissivity` | (txt / *.dll in default) | atmospheric transmittance/emissivity data |
+
+**Important:**
+- Reflectance/emissivity values should be in **[0,1]**. The loader will scale common “percent” inputs (0–100) down.
+- Wavelength units are auto-handled in several loaders (e.g., nm → μm) but keep files consistent whenever possible.
+
+---
+
+## Computational logic (module-by-module)
+
+This section maps the **code modules** to the **math** actually implemented in this repository, and clarifies the sign conventions.
+
+### 1) Solar-weighted reflectance (R_sol) — `core/spectrum.py` + `core/calculations.py`
+
+**Where in code**
+- `core/calculations.py::calculate_R_sol()`
+- `core/spectrum.py::calculate_weighted_reflectance()`
+- Interpolation: `core/spectrum.py::interpolate_spectrum()` (PCHIP, no extrapolation)
+
+**Math**
+Given reflectance `R(λ)` and solar spectrum `I(λ)` on the same grid:
+
+\[
+R_{sol}=\frac{\int_{\lambda_1}^{\lambda_2} R(\lambda) I(\lambda)\, d\lambda}{\int_{\lambda_1}^{\lambda_2} I(\lambda)\, d\lambda}
+\]
+
+Then the solar absorptance used in the cooling/heating balance is:
+
+\[
+\alpha_{s}=1-R_{sol}
+\]
+
+Notes:
+- Wavelength ranges come from `config.ini`: `WAVELENGTH_RANGE` (solar band), and `VISIABLE_RANGE` for visible-only weighted metrics.
+
+---
+
+### 2) Temperature-weighted average emissivity — `core/physics.py`
+
+**Where in code**
+- `core/physics.py::planck_lambda()`
+- `core/physics.py::calculate_average_emissivity()`
+
+**Math**
+Using Planck spectral radiance (as implemented):
+
+\[
+I_{BB}(\lambda,T)=\frac{2hc^2}{\lambda^5}\frac{1}{\exp\left(\frac{hc}{\lambda kT}\right)-1}
+\]
+
+Average emissivity weighted by the blackbody spectrum:
+
+\[
+\bar\varepsilon(T)=\frac{\int \varepsilon(\lambda)I_{BB}(\lambda,T)\,d\lambda}{\int I_{BB}(\lambda,T)\,d\lambda}
+\]
+
+Numerical integration uses trapezoidal integration (`np.trapezoid` / `np.trapz`).
+
+---
+
+### 3) Angular integration grid — `core/calculations.py::_build_angle_grid`
+
+**Where in code**
+- `_build_angle_grid(angle_steps)`
+
+The code discretizes the hemisphere \(\theta\in[0,\pi/2)\) with:
+
+- \(d\theta\) uniform
+- solid-angle factor (Lambertian weighting):
+
+\[
+\text{angle\_factor}=2\pi\sin\theta\cos\theta\,d\theta
+\]
+
+This factor is later multiplied by the spectral integral to obtain hemispherical power.
+
+---
+
+### 4) Radiative terms: surface emission and atmospheric back radiation — `core/calculations.py::_radiative_terms`
+
+**Where in code**
+- `_planck_spectral_exitance()` (numerically stable exponent cap)
+- `_radiative_terms()`
+
+**Atmosphere model used**
+Atmospheric “effective emissivity” is computed from transmittance `tmat(λ)` via:
+
+\[
+\varepsilon_{atm}(\lambda,\theta)=1-\tau(\lambda)^{\sec\theta}
+\]
+
+**Surface → space term**
+The code computes (discretized form):
+
+\[
+P_{rad}(T_s)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda) I_{BB}(\lambda,T_s)\,d\lambda
+\]
+
+**Atmosphere → surface term**
+
+\[
+P_{atm}(T_a)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda)\,\varepsilon_{atm}(\lambda,\theta)\, I_{BB}(\lambda,T_a)\,d\lambda
+\]
+
+In code, these are `p_r` and `p_a` respectively.
+
+---
+
+### 5) Convection (natural + forced) — `core/physics.py::calculate_convection_coefficient`
+
+**Where in code**
+- `core/physics.py::calculate_convection_coefficient()`
+
+This function estimates air properties and applies common flat-plate correlations:
+
+Natural convection:
+- \(Ra = g\beta|\Delta T|L^3/(\nu\alpha)\)
+- \(Nu_{nat} = 0.54 Ra^{1/4}\) (laminar, \(Ra<10^7\))
+- \(Nu_{nat} = 0.15 Ra^{1/3}\) (turbulent)
+
+Forced convection:
+- \(Re = vL/\nu\)
+- \(Nu_{forced} = 0.664 Re^{1/2}Pr^{1/3}\) (laminar)
+- \(Nu_{forced} = 0.037 Re^{4/5}Pr^{1/3}\) (turbulent)
+
+Churchill–Usagi blending (implemented):
+
+\[
+h=(h_{nat}^n+h_{forced}^n)^{1/n},\quad n=3
+\]
+
+The function returns a minimum of 1.0 W/(m²·K) for numerical stability.
+
+---
+
+### 6) Net cooling power balance — `core/calculations.py::main_cooling_gui`
+
+**Where in code**
+- `main_cooling_gui()`
+
+At each film temperature `T_film` (°C) with ambient `T_a1` (°C):
+
+- `p_r`: surface radiative emission (W/m²)
+- `p_a`: atmospheric downward radiation absorbed by surface (W/m²)
+- `Q_solar = α_s * S_solar`
+- `Q_conv` is implemented using the sign convention:
+
+\[
+Q_{conv}=h_{total}(T_{amb}-T_{film})
+\]
+
+and the net cooling power is computed as:
+
+\[
+P_{net}=p_r - p_a - Q_{conv} - Q_{solar} + P_{phase}
+\]
+
+Where optional `P_phase` adds extra cooling power above a phase-change trigger temperature (see `_phase_power`).
+
+**What is reported as “Power_0”**
+The code extracts the index closest to `T_film == T_amb` and reports `P_net(ΔT≈0)`.
+
+---
+
+### 7) Net heating power balance — `core/calculations.py::main_heating_gui`
+
+**Where in code**
+- `main_heating_gui()`
+
+Heating mode is computed as the “opposite” balance:
+
+\[
+P_{heat}=Q_{solar}+p_a+Q_{conv}-p_r-P_{phase}
+\]
+
+So a larger solar absorption and atmospheric back radiation increases heating power.
+
+---
+
+## Outputs
+
+Typical outputs exposed in GUI and/or returned from `skip_dialog=True` include:
+
+- `R_sol`: solar-weighted reflectance
+- `R_sol1`: visible-weighted reflectance
+- `avg_emissivity`: temperature-weighted average emissivity
+- `results`: power matrix vs. film temperature and convection coefficients
+- `Power_0`: power at ΔT ≈ 0
+
+---
+
+## Citation / Academic use
+If you use this tool in research, please cite relevant radiative cooling literature and acknowledge the repository.
+
+---
+
+## License
+Academic / research use. See `LICENSE` (if present) and the project statements in `default/计算与文章发表声明.txt`.
+
+---
+
+## Chinese
+
+### 项目简介
+本仓库提供一个 **PyQt 图形界面 + Python 核心计算库**，用于计算：
+
+- **辐射净制冷功率**（白天/夜间）
+- **辐射净制热功率**
+- **太阳光谱加权反射率 / 吸收率**（AM1.5）
+- **黑体谱加权平均发射率**
+- **自然对流 + 强制对流（Churchill–Usagi 混合法）**
+- 参数扫描与功率分量分解（便于画图/发文章）
+
+该实现面向材料光谱选择性设计、热管理与建筑节能等科研应用。
+
+### 下载
+- 百度网盘： https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC
+- GitHub Releases： https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases
+
+交流群：
+- QQ 群： http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=jFVhTIuH2_MxUv8UH6NkoMeV3pXX4eJg&authKey=Zv0lhgtkheyCAD5b2LmHRef2vxcqkFdoJY5rHxxs93oSSANdwxbezu%2BGOXOqiLfO&noverify=0&group_code=767753318
+
+---
+
+## 目录结构
 
 ```
-PyQt5>=5.15.0
-numpy>=1.19.0
-scipy>=1.5.0
-pandas>=1.1.0
-matplotlib>=3.3.0
-openpyxl>=3.0.0
-configparser
-pillow
+.
+├─ core/                   # 非GUI计算核心（物理模型 + 光谱处理 + 数值积分）
+│  ├─ calculations.py       # GUI调用的高层计算入口
+│  ├─ physics.py            # 物理模型（普朗克定律、平均发射率、对流换热系数）
+│  ├─ spectrum.py           # 数据读取/插值/光谱加权积分
+│  ├─ plots.py              # 绘图工具（如使用）
+│  └─ ...
+├─ gui/                     # PyQt 界面、对话框、线程、i18n
+├─ default/                 # 默认数据（AM1.5、波长网格、大气数据、配置文件）
+├─ main.py / main_Qt.py     # 启动入口
+└─ README.md
 ```
 
 ---
 
-## 📁 Required Data Files
+## 快速开始
 
-All data files should be placed in the `default/` directory:
-
-| File | Description | Format | Required Columns |
-|------|-------------|--------|------------------|
-| `config.ini` | Configuration parameters | INI | Multiple sections |
-| `AM1.5.dll` | Standard solar spectrum (AM1.5G) | Excel | λ (μm), I (W/m²/μm) |
-| `wavelength.csv` | Wavelength grid | CSV | λ (μm) |
-| `reflectance.txt` | Material reflectance (0.3-2.5 μm) | TXT | λ (μm), R |
-| `emissivity.txt` | Material emissivity (8-13 μm) | TXT | λ (μm), ε |
-| `1.dll` | Atmospheric transmittance (clear) | Excel | λ (μm), τ |
-| `2.dll` | Atmospheric transmittance (cloudy) | Excel | λ (μm), τ |
-
-### Example Data Format
-
-**reflectance.txt:**
-```
-0.3    0.95
-0.4    0.94
-0.5    0.93
-...
-2.5    0.90
-```
-
-**emissivity.txt:**
-```
-8.0    0.98
-8.5    0.97
-9.0    0.96
-...
-13.0   0.95
-```
-
-> **⚠️ Important:** Data files must contain only numerical values (no headers, no text). Use tab or space as delimiter.
-
----
-
-## 🎯 Usage Guide
-
-### 1. Basic Cooling Power Calculation
-
-```python
-# GUI Workflow:
-1. Launch application: python main.py
-2. Select reflectance file (visible to near-IR)
-3. Select emissivity file (mid-IR atmospheric window)
-4. Choose atmospheric conditions (1.dll or 2.dll)
-5. Click "Radiation Cooling Power"
-6. View results and export data
-```
-
-**Expected Output:**
-- Cooling Power: `XXX.XX W/m²` at ambient temperature
-- Solar Absorptance: `α_s`
-- Average Emissivity: `ε_avg`
-- Interactive plot: Cooling Power vs. ΔT
-
-### 2. Energy Map Generation
-
-```python
-# For geographical energy modeling:
-1. Prepare material property files
-2. Click "Energy Map Calculation"
-3. Obtain:
-   - Material weighted emissivity (ε_8-13μm)
-   - Solar spectral reflectance (R_0.3-2.5μm)
-   - Visible spectral reflectance (R_0.4-0.7μm)
-4. Use parameters in regional climate models
-```
-
-### 3. Wind Speed Analysis
-
-```python
-# Generate 2D parametric maps:
-1. Load all required material files
-2. Select "Wind Speed & Cooling Efficiency"
-3. Input solar irradiance (e.g., 1000 W/m²)
-4. View contour maps:
-   - X-axis: Wind speed (0-5 m/s)
-   - Y-axis: Atmospheric emissivity (0-1)
-   - Color: Temperature difference or cooling power
-```
-
-### 4. Atmospheric Emissivity-Solar Irradiance Cloud
-
-```python
-# Comprehensive parametric study:
-1. Click "Atmospheric Emissivity-Solar Irradiance Cloud"
-2. Software generates 2D map:
-   - X-axis: Atmospheric emissivity (0-1)
-   - Y-axis: Solar irradiance (0-1000 W/m²)
-   - Color: Net cooling power at ΔT=0
-3. Export data to Excel with two sheets
-```
-
----
-
-## 📊 Output Parameters
-
-### Calculated Values
-
-| Parameter | Unit | Description |
-|-----------|------|-------------|
-| **P_cool** | W/m² | Net radiative cooling power at T_film = T_amb |
-| **P_heat** | W/m² | Net radiative heating power |
-| **α_solar** | - | Solar-weighted absorptance (0.3-2.5 μm) |
-| **ε_avg** | - | Temperature-weighted emissivity (8-13 μm) |
-| **R_sol** | - | Solar-weighted reflectance |
-| **R_vis** | - | Visible-weighted reflectance (0.4-0.7 μm) |
-| **h_c** | W/m²·K | Convection coefficient |
-
-### Visualization Outputs
-
-- 📈 **Line plots:** Cooling/heating power vs. temperature difference
-- 🗺️ **Contour maps:** 2D parametric surfaces
-- 📊 **Excel exports:** Tabulated data for further analysis
-- 🎨 **Customizable plots:** Publication-quality figures
-
----
-
-## 🔧 Advanced Features
-
-### Configuration Editor
-
-Edit calculation parameters through the GUI:
-
-```ini
-[PHYSICAL_CONSTANTS]
-H = 6.62607015e-34      # Planck's constant (J·s)
-C = 2.99792458e8        # Speed of light (m/s)
-KB = 1.380649e-23       # Boltzmann constant (J/K)
-
-[CALCULATIONS]
-T_a1 = 25.0             # Ambient temperature (°C)
-T_filmmin = -100.0      # Min film temperature (°C)
-T_filmmax = 100.0       # Max film temperature (°C)
-S_solar = 1000          # Solar irradiance (W/m²)
-HC_VALUES = 5, 10, 15   # Convection coefficients (W/m²·K)
-WAVELENGTH_RANGE = 0.3, 2.5    # Solar spectrum (μm)
-VISIABLE_RANGE = 0.4, 0.7      # Visible spectrum (μm)
-```
-
-### File Converter Tool
-
-Convert Excel files to TXT format:
-- Automatically extracts first two columns
-- Handles multiple encodings
-- Validates data structure
-
-### Multi-language Interface
-
-Switch between Chinese and English:
-- Real-time language switching
-- All dialogs and messages translated
-- Formulas remain in standard notation
-
----
-
-## 📈 Validation & Accuracy
-
-### Key Considerations
-
-✅ **Spectral Resolution:** Higher resolution improves accuracy (recommend Δλ < 0.1 μm)
-
-✅ **Angular Integration:** 100+ points ensure convergence (tested error < 0.5%)
-
-✅ **Temperature Range:** Validated from -100°C to +100°C
-
-✅ **Wavelength Coverage:** Critical ranges: Solar (0.3-2.5 μm), IR (8-13 μm)
-
-### Assumptions & Limitations
-
-⚠️ **Diffuse Surface:** Assumes Lambertian emission/reflection
-
-⚠️ **Steady State:** Transient effects not included
-
-⚠️ **1D Heat Transfer:** Edge effects neglected
-
-⚠️ **Standard Atmosphere:** Uses MODTRAN-based profiles
-
-
-
----
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-**Problem:** "Cannot read file with any encoding"
+### 1）安装环境
 ```bash
-Solution: Ensure file contains only numbers, no headers or text
-Convert file to UTF-8 encoding: iconv -f GBK -t UTF-8 input.txt > output.txt
+python -m venv venv
+# Windows: venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
 ```
 
-**Problem:** "Configuration file missing section"
+> 若仓库中没有提供 `requirements.txt`，一般需要：`numpy scipy pandas matplotlib openpyxl PyQt5`。
+
+### 2）运行程序
 ```bash
-Solution: Restore default config.ini from repository
-Check all required sections: GENERAL, PHYSICAL_CONSTANTS, CALCULATIONS
-```
-
-**Problem:** Calculation results seem incorrect
-```bash
-Solution: 
-1. Verify wavelength units (μm vs nm)
-2. Check emissivity/reflectance ranges (0-1, not 0-100)
-3. Ensure atmospheric transmittance file matches climate
-4. Review temperature settings in config.ini
-```
-
-**Problem:** GUI doesn't display properly
-```bash
-Solution:
-pip install --upgrade PyQt5
-# On Linux, may need: sudo apt-get install python3-pyqt5
+python main.py
 ```
 
 ---
 
-## 📚 References
+## 输入文件与数据约定
 
-1. **Raman, A. P., et al.** "Passive radiative cooling below ambient air temperature under direct sunlight." *Nature* 515.7528 (2014): 540-544. [DOI: 10.1038/nature13883](https://doi.org/10.1038/nature13883)
+大部分计算依赖 GUI 选择的 **6 个文件**：
 
-2. **Zhao, Dongliang, et al.** "Radiative sky cooling: Fundamental principles, materials, and applications." *Applied Physics Reviews* 6.2 (2019): 021306. [DOI: 10.1063/1.5087281](https://doi.org/10.1063/1.5087281)
+| Key | 常见文件 | 含义 |
+|---|---|---|
+| `config` | `default/config.ini` | 常数、波段范围、温度范围、对流系数列表等 |
+| `reflectance` | (txt/csv) | 材料反射率 R(λ)（太阳波段） |
+| `spectrum` | `default/AM1.5.xlsx` | 太阳光谱 I(λ) |
+| `wavelength` | `default/Wavelength.csv` | 大气窗口插值用的波长网格 |
+| `emissivity` | (txt) | 材料发射率 ε(λ)（大气窗口） |
+| `atm_emissivity` | (txt / *.dll) | 大气透过率/等效发射率数据 |
 
-3. **Zhai, Yao, et al.** "Scalable-manufactured randomized glass-polymer hybrid metamaterial for daytime radiative cooling." *Science* 355.6329 (2017): 1062-1066.
-
-4. **Incropera, F. P., et al.** *Fundamentals of Heat and Mass Transfer*. 7th ed. Wiley, 2011.
-
-5. **Bergman, T. L., et al.** *Introduction to Heat Transfer*. 6th ed. Wiley, 2011.
-
-6. **Siegel, R., and J. R. Howell.** *Thermal Radiation Heat Transfer*. 5th ed. CRC Press, 2010.
-
-7. **Modest, M. F.** *Radiative Heat Transfer*. 3rd ed. Academic Press, 2013.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow PEP 8 style guide for Python code
-- Add docstrings to all functions
-- Include unit tests for new features
-- Update documentation for API changes
+注意：
+- 反射率/发射率应在 **[0,1]**。程序会对常见的百分数输入（0–100）进行缩放。
+- 若波长单位混用（nm/μm），部分读取函数会自动处理，但建议文件本身保持一致。
 
 ---
 
-## 📬 Contact & Support
+## 计算逻辑（按模块拆解）
 
-**Author:** CTY  
-**QQ Group:** 767753318  
-**WeChat:** cuity_  
-**Email:** Contact via QQ group  
-**Repository:** [Gitee](https://gitee.com/cuity1999/Radiation-cooling-and-heating-calculation)
+下面将仓库中的 **模块** 与 **实际实现的计算公式/符号约定** 一一对应，便于复现实验与论文写作。
 
-### Citation
+### 1）太阳光谱加权反射率 R_sol — `core/spectrum.py` + `core/calculations.py`
 
-If you use this software in your research, please cite:
+代码位置：
+- `core/calculations.py::calculate_R_sol()`
+- `core/spectrum.py::calculate_weighted_reflectance()`
+- 光谱插值：`core/spectrum.py::interpolate_spectrum()`（PCHIP，避免振铃；区间外用边界值）
 
-```bibtex
-NO INFORMATION
-```
+公式：
 
-### Support the Project
+\[
+R_{sol}=\frac{\int_{\lambda_1}^{\lambda_2} R(\lambda) I(\lambda)\, d\lambda}{\int_{\lambda_1}^{\lambda_2} I(\lambda)\, d\lambda}
+\]
 
-⭐ Star this repository if you find it useful!  
-🐛 Report bugs via [Issues](https://github.com/yourusername/radiation-calculator/issues)  
-💡 Suggest features or improvements  
-📖 Improve documentation
+太阳吸收率：
 
----
+\[
+\alpha_{s}=1-R_{sol}
+\]
 
-## 📄 License
-
-This software is provided **free for academic and research purposes**. 
-
-**Restrictions:**
-- Commercial use requires explicit permission from the author
-- Redistribution must include original attribution
-- Modifications must be clearly documented
-
-**Disclaimer:** This software is provided "as is" without warranty of any kind. The author is not liable for any damages arising from its use.
+其中波段来自 `config.ini` 的 `WAVELENGTH_RANGE`（太阳波段）与 `VISIABLE_RANGE`（可见光波段）。
 
 ---
 
-## 🎓 Educational Resources
+### 2）黑体谱加权平均发射率 — `core/physics.py`
 
-### Recommended Reading
+代码位置：
+- `core/physics.py::planck_lambda()`
+- `core/physics.py::calculate_average_emissivity()`
 
-- **Radiative Cooling Fundamentals:** Start with Zhao et al. (2019) review paper
-- **Heat Transfer Theory:** Chapters on radiation in Incropera & DeWitt
-- **Atmospheric Physics:** MODTRAN atmospheric profiles and transmission
-- **Material Science:** Spectral selectivity and metamaterials
+普朗克定律（代码实现形式）：
 
-### Tutorial Series
+\[
+I_{BB}(\lambda,T)=\frac{2hc^2}{\lambda^5}\frac{1}{\exp\left(\frac{hc}{\lambda kT}\right)-1}
+\]
 
-Coming soon: Video tutorials covering:
-1. Basic setup and first calculation
-2. Understanding spectral data requirements
-3. Advanced parametric studies
-4. Interpreting results for real applications
+加权平均发射率：
 
----
+\[
+\bar\varepsilon(T)=\frac{\int \varepsilon(\lambda)I_{BB}(\lambda,T)\,d\lambda}{\int I_{BB}(\lambda,T)\,d\lambda}
+\]
 
-## 🔄 Version History
-### Version 4.0 (NEXT Plan)
-- 😋 Add energy-saving map drawing function (this will be soon)
-  
-### Version 3.6 (Current)
-- ✨ Added atmospheric emissivity-solar irradiance cloud map
-- ✨ Fix the logic of drawing preview
-  
-### Version 3.5 
-- 🌐 Improved multi-language support
-
-### Version 3.0
-- Added wind speed analysis with Churchill-Usagi correlation
-- Implemented configuration editor
-- Multi-language interface (Chinese/English)
-
-### Version 2.0
-- Added heating power calculation
-- Improved spectral integration accuracy
-- GUI redesign with modern aesthetics
-
-### Version 1.0
-- Initial release with basic cooling power calculation
+数值积分使用梯形积分（`np.trapezoid/np.trapz`）。
 
 ---
 
-## 🌟 Acknowledgments
+### 3）角度积分离散 — `core/calculations.py::_build_angle_grid`
 
-Special thanks to:
-- The thermal radiation research community
-- PyQt5 and Python scientific computing ecosystem
-- Contributors and users providing feedback
-- Research groups sharing spectral data
+半球积分采用 \(\theta\in[0,\pi/2)\) 的均匀步长离散，并使用 Lambertian 权重：
+
+\[
+\text{angle\_factor}=2\pi\sin\theta\cos\theta\,d\theta
+\]
+
+---
+
+### 4）辐射分量：向外辐射与大气回辐射 — `core/calculations.py::_radiative_terms`
+
+大气等效发射率（由透过率得到）：
+
+\[
+\varepsilon_{atm}(\lambda,\theta)=1-\tau(\lambda)^{\sec\theta}
+\]
+
+向外辐射（表面 → 太空）：
+
+\[
+P_{rad}(T_s)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda) I_{BB}(\lambda,T_s)\,d\lambda
+\]
+
+大气回辐射（大气 → 表面）：
+
+\[
+P_{atm}(T_a)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda)\varepsilon_{atm}(\lambda,\theta) I_{BB}(\lambda,T_a)\,d\lambda
+\]
+
+在代码中分别对应 `p_r` 与 `p_a`。
+
+---
+
+### 5）对流换热系数（自然+强制）— `core/physics.py::calculate_convection_coefficient`
+
+自然对流：
+- \(Ra = g\beta|\Delta T|L^3/(\nu\alpha)\)
+- \(Nu_{nat} = 0.54 Ra^{1/4}\)（层流）/ \(0.15 Ra^{1/3}\)（湍流）
+
+强制对流：
+- \(Re = vL/\nu\)
+- \(Nu_{forced} = 0.664 Re^{1/2}Pr^{1/3}\)（层流）/ \(0.037 Re^{4/5}Pr^{1/3}\)（湍流）
+
+混合（Churchill–Usagi）：
+
+\[
+h=(h_{nat}^n+h_{forced}^n)^{1/n},\quad n=3
+\]
+
+程序为了数值稳定返回最小值 1.0 W/(m²·K)。
+
+---
+
+### 6）净制冷功率 — `core/calculations.py::main_cooling_gui`
+
+每个膜温 `T_film` 对应：
+- `p_r`：向外辐射
+- `p_a`：大气回辐射
+- `Q_solar=\alpha_s S_solar`
+- 对流项使用约定：
+
+\[
+Q_{conv}=h_{total}(T_{amb}-T_{film})
+\]
+
+净制冷功率：
+
+\[
+P_{net}=p_r - p_a - Q_{conv} - Q_{solar} + P_{phase}
+\]
+
+其中 `P_phase` 为可选相变附加功率（见 `_phase_power`：超过相变温度后线性爬升并平台）。
+
+“Power_0” 为 \(T_{film}\approx T_{amb}\)（即 \(\Delta T\approx 0\)）时的净功率。
+
+---
+
+### 7）净制热功率 — `core/calculations.py::main_heating_gui`
+
+制热模式计算：
+
+\[
+P_{heat}=Q_{solar}+p_a+Q_{conv}-p_r-P_{phase}
+\]
+
+太阳吸收与大气回辐射越大，制热功率越高。
+
+---
+
+## 输出参数
+GUI/接口通常给出：
+
+- `R_sol`：太阳加权反射率
+- `R_sol1`：可见光加权反射率
+- `avg_emissivity`：黑体谱加权平均发射率
+- `results`：功率矩阵（膜温 × 对流系数组）
+- `Power_0`：ΔT≈0 时功率
+
+---
+
+## 参考文献（建议）
+- Raman, A. P., et al. *Nature* (2014)
+- Zhao, D., et al. *Applied Physics Reviews* (2019)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for the thermal sciences community**
-
-[⬆ Back to Top](#-radiative-coolingheating-calculator)
+<a href="#radiative-cooling--heating-calculator">Back to top</a> • <a href="#radiative-cooling--heating-calculator">返回顶部</a>
 
 </div>
+
+<!-- anchors -->
+<a id="english"></a>
+<a id="chinese"></a>
