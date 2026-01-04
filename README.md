@@ -6,13 +6,14 @@
 
 <div align="center">
 
-# Radiative Cooling & Heating Calculator  
+# Radiative Cooling & Heating Calculator
+
 # 辐射制冷/制热计算器
 
-**A research-grade tool to compute radiative cooling/heating power from spectral optical data and atmospheric models**  
+**A research-grade tool to compute radiative cooling/heating power from spectral optical data and atmospheric models**  \
 **面向科研的辐射制冷/制热功率计算工具：基于材料光谱与大气模型进行精确积分计算**
 
-<a href="#english">English</a> • <a href="#chinese">中文</a>
+<a href="#english"><strong>English</strong></a> • <a href="#chinese"><strong>中文</strong></a>
 
 [![Python](https://img.shields.io/badge/Python-3.7%2B-blue.svg)](https://www.python.org/downloads/)
 [![PyQt5](https://img.shields.io/badge/PyQt5-5.15%2B-green.svg)](https://pypi.org/project/PyQt5/)
@@ -114,17 +115,17 @@ This section maps the **code modules** to the **math** actually implemented in t
 - Interpolation: `core/spectrum.py::interpolate_spectrum()` (PCHIP, no extrapolation)
 
 **Math**
-Given reflectance `R(λ)` and solar spectrum `I(λ)` on the same grid:
+Given reflectance $R(\lambda)$ and solar spectrum $I(\lambda)$ on the same grid:
 
-\[
-R_{sol}=\frac{\int_{\lambda_1}^{\lambda_2} R(\lambda) I(\lambda)\, d\lambda}{\int_{\lambda_1}^{\lambda_2} I(\lambda)\, d\lambda}
-\]
+$$
+R_{\mathrm{sol}}=\frac{\int_{\lambda_1}^{\lambda_2} R(\lambda)\, I(\lambda)\, d\lambda}{\int_{\lambda_1}^{\lambda_2} I(\lambda)\, d\lambda}
+$$
 
 Then the solar absorptance used in the cooling/heating balance is:
 
-\[
-\alpha_{s}=1-R_{sol}
-\]
+$$
+\alpha_s = 1 - R_{\mathrm{sol}}
+$$
 
 Notes:
 - Wavelength ranges come from `config.ini`: `WAVELENGTH_RANGE` (solar band), and `VISIABLE_RANGE` for visible-only weighted metrics.
@@ -140,15 +141,15 @@ Notes:
 **Math**
 Using Planck spectral radiance (as implemented):
 
-\[
-I_{BB}(\lambda,T)=\frac{2hc^2}{\lambda^5}\frac{1}{\exp\left(\frac{hc}{\lambda kT}\right)-1}
-\]
+$$
+I_{\mathrm{BB}}(\lambda, T)=\frac{2 h c^2}{\lambda^5}\,\frac{1}{\exp\!\left(\frac{h c}{\lambda k_B T}\right)-1}
+$$
 
 Average emissivity weighted by the blackbody spectrum:
 
-\[
-\bar\varepsilon(T)=\frac{\int \varepsilon(\lambda)I_{BB}(\lambda,T)\,d\lambda}{\int I_{BB}(\lambda,T)\,d\lambda}
-\]
+$$
+\bar{\varepsilon}(T)=\frac{\int \varepsilon(\lambda)\, I_{\mathrm{BB}}(\lambda, T)\, d\lambda}{\int I_{\mathrm{BB}}(\lambda, T)\, d\lambda}
+$$
 
 Numerical integration uses trapezoidal integration (`np.trapezoid` / `np.trapz`).
 
@@ -159,14 +160,14 @@ Numerical integration uses trapezoidal integration (`np.trapezoid` / `np.trapz`)
 **Where in code**
 - `_build_angle_grid(angle_steps)`
 
-The code discretizes the hemisphere \(\theta\in[0,\pi/2)\) with:
+The code discretizes the hemisphere $\theta\in[0,\pi/2)$ with:
 
-- \(d\theta\) uniform
+- $d\theta$ uniform
 - solid-angle factor (Lambertian weighting):
 
-\[
-\text{angle\_factor}=2\pi\sin\theta\cos\theta\,d\theta
-\]
+$$
+\text{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta
+$$
 
 This factor is later multiplied by the spectral integral to obtain hemispherical power.
 
@@ -179,24 +180,24 @@ This factor is later multiplied by the spectral integral to obtain hemispherical
 - `_radiative_terms()`
 
 **Atmosphere model used**
-Atmospheric “effective emissivity” is computed from transmittance `tmat(λ)` via:
+Atmospheric “effective emissivity” is computed from transmittance $\tau(\lambda)$ (named `tmat` in code) via:
 
-\[
-\varepsilon_{atm}(\lambda,\theta)=1-\tau(\lambda)^{\sec\theta}
-\]
+$$
+\varepsilon_{\mathrm{atm}}(\lambda,\theta)=1-\tau(\lambda)^{\sec\theta}
+$$
 
 **Surface → space term**
 The code computes (discretized form):
 
-\[
-P_{rad}(T_s)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda) I_{BB}(\lambda,T_s)\,d\lambda
-\]
+$$
+P_{\mathrm{rad}}(T_s)=\int_{\Omega} \cos\theta\, d\Omega\;\int \varepsilon_s(\lambda)\, I_{\mathrm{BB}}(\lambda, T_s)\, d\lambda
+$$
 
 **Atmosphere → surface term**
 
-\[
-P_{atm}(T_a)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda)\,\varepsilon_{atm}(\lambda,\theta)\, I_{BB}(\lambda,T_a)\,d\lambda
-\]
+$$
+P_{\mathrm{atm}}(T_a)=\int_{\Omega} \cos\theta\, d\Omega\;\int \varepsilon_s(\lambda)\,\varepsilon_{\mathrm{atm}}(\lambda,\theta)\, I_{\mathrm{BB}}(\lambda, T_a)\, d\lambda
+$$
 
 In code, these are `p_r` and `p_a` respectively.
 
@@ -210,20 +211,20 @@ In code, these are `p_r` and `p_a` respectively.
 This function estimates air properties and applies common flat-plate correlations:
 
 Natural convection:
-- \(Ra = g\beta|\Delta T|L^3/(\nu\alpha)\)
-- \(Nu_{nat} = 0.54 Ra^{1/4}\) (laminar, \(Ra<10^7\))
-- \(Nu_{nat} = 0.15 Ra^{1/3}\) (turbulent)
+- $Ra = g\beta |\Delta T| L^3/(\nu\alpha)$
+- $Nu_{\mathrm{nat}} = 0.54\, Ra^{1/4}$ (laminar, $Ra<10^7$)
+- $Nu_{\mathrm{nat}} = 0.15\, Ra^{1/3}$ (turbulent)
 
 Forced convection:
-- \(Re = vL/\nu\)
-- \(Nu_{forced} = 0.664 Re^{1/2}Pr^{1/3}\) (laminar)
-- \(Nu_{forced} = 0.037 Re^{4/5}Pr^{1/3}\) (turbulent)
+- $Re = vL/\nu$
+- $Nu_{\mathrm{forced}} = 0.664\, Re^{1/2} Pr^{1/3}$ (laminar)
+- $Nu_{\mathrm{forced}} = 0.037\, Re^{4/5} Pr^{1/3}$ (turbulent)
 
 Churchill–Usagi blending (implemented):
 
-\[
-h=(h_{nat}^n+h_{forced}^n)^{1/n},\quad n=3
-\]
+$$
+h = \left(h_{\mathrm{nat}}^n + h_{\mathrm{forced}}^n\right)^{1/n},\quad n=3
+$$
 
 The function returns a minimum of 1.0 W/(m²·K) for numerical stability.
 
@@ -241,20 +242,20 @@ At each film temperature `T_film` (°C) with ambient `T_a1` (°C):
 - `Q_solar = α_s * S_solar`
 - `Q_conv` is implemented using the sign convention:
 
-\[
-Q_{conv}=h_{total}(T_{amb}-T_{film})
-\]
+$$
+Q_{\mathrm{conv}} = h_{\mathrm{total}}\,(T_{\mathrm{amb}}-T_{\mathrm{film}})
+$$
 
 and the net cooling power is computed as:
 
-\[
-P_{net}=p_r - p_a - Q_{conv} - Q_{solar} + P_{phase}
-\]
+$$
+P_{\mathrm{net}} = p_r - p_a - Q_{\mathrm{conv}} - Q_{\mathrm{solar}} + P_{\mathrm{phase}}
+$$
 
 Where optional `P_phase` adds extra cooling power above a phase-change trigger temperature (see `_phase_power`).
 
 **What is reported as “Power_0”**
-The code extracts the index closest to `T_film == T_amb` and reports `P_net(ΔT≈0)`.
+The code extracts the index closest to `T_film == T_amb` and reports $P_{\mathrm{net}}(\Delta T\approx 0)$.
 
 ---
 
@@ -265,9 +266,9 @@ The code extracts the index closest to `T_film == T_amb` and reports `P_net(ΔT�
 
 Heating mode is computed as the “opposite” balance:
 
-\[
-P_{heat}=Q_{solar}+p_a+Q_{conv}-p_r-P_{phase}
-\]
+$$
+P_{\mathrm{heat}} = Q_{\mathrm{solar}} + p_a + Q_{\mathrm{conv}} - p_r - P_{\mathrm{phase}}
+$$
 
 So a larger solar absorption and atmospheric back radiation increases heating power.
 
@@ -387,15 +388,15 @@ python main.py
 
 公式：
 
-\[
-R_{sol}=\frac{\int_{\lambda_1}^{\lambda_2} R(\lambda) I(\lambda)\, d\lambda}{\int_{\lambda_1}^{\lambda_2} I(\lambda)\, d\lambda}
-\]
+$$
+R_{\mathrm{sol}}=\frac{\int_{\lambda_1}^{\lambda_2} R(\lambda)\, I(\lambda)\, d\lambda}{\int_{\lambda_1}^{\lambda_2} I(\lambda)\, d\lambda}
+$$
 
 太阳吸收率：
 
-\[
-\alpha_{s}=1-R_{sol}
-\]
+$$
+\alpha_s = 1 - R_{\mathrm{sol}}
+$$
 
 其中波段来自 `config.ini` 的 `WAVELENGTH_RANGE`（太阳波段）与 `VISIABLE_RANGE`（可见光波段）。
 
@@ -409,15 +410,15 @@ R_{sol}=\frac{\int_{\lambda_1}^{\lambda_2} R(\lambda) I(\lambda)\, d\lambda}{\in
 
 普朗克定律（代码实现形式）：
 
-\[
-I_{BB}(\lambda,T)=\frac{2hc^2}{\lambda^5}\frac{1}{\exp\left(\frac{hc}{\lambda kT}\right)-1}
-\]
+$$
+I_{\mathrm{BB}}(\lambda, T)=\frac{2 h c^2}{\lambda^5}\,\frac{1}{\exp\!\left(\frac{h c}{\lambda k_B T}\right)-1}
+$$
 
 加权平均发射率：
 
-\[
-\bar\varepsilon(T)=\frac{\int \varepsilon(\lambda)I_{BB}(\lambda,T)\,d\lambda}{\int I_{BB}(\lambda,T)\,d\lambda}
-\]
+$$
+\bar{\varepsilon}(T)=\frac{\int \varepsilon(\lambda)\, I_{\mathrm{BB}}(\lambda, T)\, d\lambda}{\int I_{\mathrm{BB}}(\lambda, T)\, d\lambda}
+$$
 
 数值积分使用梯形积分（`np.trapezoid/np.trapz`）。
 
@@ -425,11 +426,11 @@ I_{BB}(\lambda,T)=\frac{2hc^2}{\lambda^5}\frac{1}{\exp\left(\frac{hc}{\lambda kT
 
 ### 3）角度积分离散 — `core/calculations.py::_build_angle_grid`
 
-半球积分采用 \(\theta\in[0,\pi/2)\) 的均匀步长离散，并使用 Lambertian 权重：
+半球积分采用 $\theta\in[0,\pi/2)$ 的均匀步长离散，并使用 Lambertian 权重：
 
-\[
-\text{angle\_factor}=2\pi\sin\theta\cos\theta\,d\theta
-\]
+$$
+\text{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta
+$$
 
 ---
 
@@ -437,21 +438,21 @@ I_{BB}(\lambda,T)=\frac{2hc^2}{\lambda^5}\frac{1}{\exp\left(\frac{hc}{\lambda kT
 
 大气等效发射率（由透过率得到）：
 
-\[
-\varepsilon_{atm}(\lambda,\theta)=1-\tau(\lambda)^{\sec\theta}
-\]
+$$
+\varepsilon_{\mathrm{atm}}(\lambda,\theta)=1-\tau(\lambda)^{\sec\theta}
+$$
 
 向外辐射（表面 → 太空）：
 
-\[
-P_{rad}(T_s)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda) I_{BB}(\lambda,T_s)\,d\lambda
-\]
+$$
+P_{\mathrm{rad}}(T_s)=\int_{\Omega} \cos\theta\, d\Omega\;\int \varepsilon_s(\lambda)\, I_{\mathrm{BB}}(\lambda, T_s)\, d\lambda
+$$
 
 大气回辐射（大气 → 表面）：
 
-\[
-P_{atm}(T_a)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda)\varepsilon_{atm}(\lambda,\theta) I_{BB}(\lambda,T_a)\,d\lambda
-\]
+$$
+P_{\mathrm{atm}}(T_a)=\int_{\Omega} \cos\theta\, d\Omega\;\int \varepsilon_s(\lambda)\,\varepsilon_{\mathrm{atm}}(\lambda,\theta)\, I_{\mathrm{BB}}(\lambda, T_a)\, d\lambda
+$$
 
 在代码中分别对应 `p_r` 与 `p_a`。
 
@@ -460,18 +461,18 @@ P_{atm}(T_a)=\int_{\Omega} \cos\theta\,d\Omega\int \varepsilon_s(\lambda)\vareps
 ### 5）对流换热系数（自然+强制）— `core/physics.py::calculate_convection_coefficient`
 
 自然对流：
-- \(Ra = g\beta|\Delta T|L^3/(\nu\alpha)\)
-- \(Nu_{nat} = 0.54 Ra^{1/4}\)（层流）/ \(0.15 Ra^{1/3}\)（湍流）
+- $Ra = g\beta |\Delta T| L^3/(\nu\alpha)$
+- $Nu_{\mathrm{nat}} = 0.54\,Ra^{1/4}$（层流）/ $0.15\,Ra^{1/3}$（湍流）
 
 强制对流：
-- \(Re = vL/\nu\)
-- \(Nu_{forced} = 0.664 Re^{1/2}Pr^{1/3}\)（层流）/ \(0.037 Re^{4/5}Pr^{1/3}\)（湍流）
+- $Re = vL/\nu$
+- $Nu_{\mathrm{forced}} = 0.664\,Re^{1/2}Pr^{1/3}$（层流）/ $0.037\,Re^{4/5}Pr^{1/3}$（湍流）
 
 混合（Churchill–Usagi）：
 
-\[
-h=(h_{nat}^n+h_{forced}^n)^{1/n},\quad n=3
-\]
+$$
+h = \left(h_{\mathrm{nat}}^n + h_{\mathrm{forced}}^n\right)^{1/n},\quad n=3
+$$
 
 程序为了数值稳定返回最小值 1.0 W/(m²·K)。
 
@@ -482,22 +483,23 @@ h=(h_{nat}^n+h_{forced}^n)^{1/n},\quad n=3
 每个膜温 `T_film` 对应：
 - `p_r`：向外辐射
 - `p_a`：大气回辐射
-- `Q_solar=\alpha_s S_solar`
-- 对流项使用约定：
+- $Q_{\mathrm{solar}}=\alpha_s\, S_{\mathrm{solar}}$
 
-\[
-Q_{conv}=h_{total}(T_{amb}-T_{film})
-\]
+对流项使用约定：
+
+$$
+Q_{\mathrm{conv}} = h_{\mathrm{total}}\,(T_{\mathrm{amb}}-T_{\mathrm{film}})
+$$
 
 净制冷功率：
 
-\[
-P_{net}=p_r - p_a - Q_{conv} - Q_{solar} + P_{phase}
-\]
+$$
+P_{\mathrm{net}} = p_r - p_a - Q_{\mathrm{conv}} - Q_{\mathrm{solar}} + P_{\mathrm{phase}}
+$$
 
-其中 `P_phase` 为可选相变附加功率（见 `_phase_power`：超过相变温度后线性爬升并平台）。
+其中 $P_{\mathrm{phase}}$ 为可选相变附加功率（见 `_phase_power`：超过相变温度后线性爬升并平台）。
 
-“Power_0” 为 \(T_{film}\approx T_{amb}\)（即 \(\Delta T\approx 0\)）时的净功率。
+“Power_0” 为 $T_{\mathrm{film}}\approx T_{\mathrm{amb}}$（即 $\Delta T\approx 0$）时的净功率。
 
 ---
 
@@ -505,9 +507,9 @@ P_{net}=p_r - p_a - Q_{conv} - Q_{solar} + P_{phase}
 
 制热模式计算：
 
-\[
-P_{heat}=Q_{solar}+p_a+Q_{conv}-p_r-P_{phase}
-\]
+$$
+P_{\mathrm{heat}} = Q_{\mathrm{solar}} + p_a + Q_{\mathrm{conv}} - p_r - P_{\mathrm{phase}}
+$$
 
 太阳吸收与大气回辐射越大，制热功率越高。
 
