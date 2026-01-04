@@ -163,15 +163,11 @@ Numerical integration uses trapezoidal integration (`np.trapezoid` / `np.trapz`)
 The code discretizes the hemisphere $\theta\in[0,\pi/2)$ with:
 
 - $d\theta$ uniform
-- Solid-angle factor (Lambertian weighting):
+- solid-angle factor (Lambertian weighting):
 
-<<<<<<< HEAD
-$
-\text{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta
-$
-=======
-$$\text{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta$$
->>>>>>> ce10b35acb544d9d1b98e667f664b4ebdc58be9e
+$$
+\mathrm{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta
+$$
 
 This factor is later multiplied by the spectral integral to obtain hemispherical power.
 
@@ -433,7 +429,7 @@ $$
 半球积分采用 $\theta\in[0,\pi/2)$ 的均匀步长离散，并使用 Lambertian 权重：
 
 $$
-\text{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta
+\mathrm{angle\_factor}=2\pi\,\sin\theta\,\cos\theta\, d\theta
 $$
 
 ---
