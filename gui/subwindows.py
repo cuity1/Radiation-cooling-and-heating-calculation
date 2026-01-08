@@ -619,6 +619,8 @@ class PowerComponentWindow(QDialog):
         # Plot each component
         ax.plot(T_film, components['p_r'], 'r-', label='p_r (Outgoing Radiation)')
         ax.plot(T_film, components['p_a'], 'b-', label='p_a (Atmospheric Radiation)')
+        if 'P_solar' in components:
+            ax.plot(T_film, components['P_solar'], 'y--', alpha=0.7, label='P_solar (Solar Irradiance)')
         ax.plot(T_film, components['Q_solar'], 'y-', label='Q_solar (Solar Absorption)')
         ax.plot(T_film, components['P_phase'], 'm-', label='P_phase (Phase-Change Power)')
 
@@ -670,6 +672,7 @@ class PowerComponentWindow(QDialog):
             for key in [
                 'p_r',
                 'p_a',
+                'P_solar',
                 'Q_solar',
                 'P_phase',
                 'Q_nat',

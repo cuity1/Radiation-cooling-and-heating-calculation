@@ -394,7 +394,8 @@ def main_power_components_gui(
         'Q_conv': [],
         'Q_nat': [],
         'Q_cond': [],
-        'Q_solar': [],
+        'P_solar': [],  # 太阳辐照度 (W/m²)
+        'Q_solar': [],  # 太阳吸收功率 (W/m²) = alpha_s * P_solar
         'P_phase': [],
         'p_net': [],
         'h_nat': [],
@@ -431,7 +432,8 @@ def main_power_components_gui(
         Q_cond = float(h_cond_wm2k * (T_a1 - T_film[i]))
         Q_conv = float((Q_nat + Q_cond))
 
-        Q_solar = float(alpha_s * S_solar)
+        P_solar = float(S_solar)  # 太阳辐照度 (W/m²)
+        Q_solar = float(alpha_s * S_solar)  # 太阳吸收功率 (W/m²)
         P_phase = _phase_power(
             T_film_c=float(T_film[i]),
             phase_temp_c=phase_temp_c,
@@ -446,6 +448,7 @@ def main_power_components_gui(
         components['Q_conv'].append(Q_conv)
         components['Q_nat'].append(Q_nat)
         components['Q_cond'].append(Q_cond)
+        components['P_solar'].append(P_solar)
         components['Q_solar'].append(Q_solar)
         components['P_phase'].append(P_phase)
         components['p_net'].append(p_net)

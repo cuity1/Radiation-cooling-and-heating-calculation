@@ -44,7 +44,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='main_v39',
+    name='RadiationCalc',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
