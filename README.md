@@ -288,6 +288,8 @@ Typical outputs exposed in GUI and/or returned from `skip_dialog=True` include:
 
 ## Citation / Academic use
 If you use this tool in research, please cite relevant radiative cooling literature and acknowledge the repository.
+(1) Cui, T.; Zheng, Y.; Cai, W.; Qi, L.; Wang, J.; Yang, W.; Song, W.; Hu, Y.; Zhu, J. Quantum to Device AI-Guided Passivation Paradigm for All-Weather Ultrastable MXene Based Photothermal Converter. Advanced Materials 2026, e19482.
+(2) Cui, T.; Zhao, Y.; Zheng, Y.; Qi, L.; Cai, W.; Wang, J.; Nie, S.; Song, W.; Hu, Y.; Yang, W.; Zhu, J. Mie-Resonant Thermochromic Safe Architectures for All-Season Radiative Thermal Management. Advanced Energy Materials 2026, e06717.
 
 ---
 
@@ -526,7 +528,7 @@ GUI/接口通常给出：
 
 ---
 
-## 推荐引用的参考文献
+## 推荐引用的参考文献（如果您使用了该工具，希望您能够引用下面的参考文献）
 (1) Cui, T.; Zheng, Y.; Cai, W.; Qi, L.; Wang, J.; Yang, W.; Song, W.; Hu, Y.; Zhu, J. Quantum to Device AI-Guided Passivation Paradigm for All-Weather Ultrastable MXene Based Photothermal Converter. Advanced Materials 2026, e19482.
 (2) Cui, T.; Zhao, Y.; Zheng, Y.; Qi, L.; Cai, W.; Wang, J.; Nie, S.; Song, W.; Hu, Y.; Yang, W.; Zhu, J. Mie-Resonant Thermochromic Safe Architectures for All-Season Radiative Thermal Management. Advanced Energy Materials 2026, e06717.
 
