@@ -13,6 +13,13 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QApplication
 
 
+def _run_compare_materials() -> None:
+    """Entry for launching the material comparison GUI (used by --compare-materials)."""
+    # 延迟导入，避免主界面启动时额外负担
+    from material_comparison_tool.examples.compare_materials import main as compare_main
+    compare_main()
+
+
 def _ensure_project_on_path() -> None:
     """
     Ensure that the directory containing the 'gui' package is on sys.path.
@@ -26,12 +33,19 @@ def _ensure_project_on_path() -> None:
     if hasattr(sys, "_MEIPASS"):
         base_dir = Path(getattr(sys, "_MEIPASS"))  # type: ignore[arg-type]
     else:
-        # When running from source, use the directory of this file.
-        base_dir = Path(__file__).resolve().parent
+        # When running from source or during PyInstaller analysis, use the directory of this file.
+        # During PyInstaller analysis, __file__ might be a relative path, so resolve it.
+        try:
+            base_dir = Path(__file__).resolve().parent
+        except (OSError, ValueError):
+            # Fallback: use current working directory if __file__ is not available
+            base_dir = Path(os.getcwd())
 
     base_str = str(base_dir)
-    if base_str not in sys.path:
-        sys.path.insert(0, base_str)
+    # 确保项目根目录在 sys.path 的最前面，这样 core 模块可以被正确导入
+    if base_str in sys.path:
+        sys.path.remove(base_str)
+    sys.path.insert(0, base_str)
 
 
 _ensure_project_on_path()
@@ -41,6 +55,11 @@ from gui.main_window import MainWindow  # noqa: E402
 
 
 def main() -> None:
+    # 如果带有对比工具参数，直接转去 compare GUI（同一个 exe，单文件）。
+    if '--compare-materials' in sys.argv:
+        _run_compare_materials()
+        return
+
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
 
@@ -55,5 +74,9 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    import multiprocessing
+
+    # 允许 PyInstaller onefile 下的多进程安全启动
+    multiprocessing.freeze_support()
     main()
 

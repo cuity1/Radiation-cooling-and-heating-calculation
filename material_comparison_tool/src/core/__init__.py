@@ -1,15 +1,7 @@
-# core package
+"""
+核心模块 - 精简 EnergyPlus 仿真引擎的核心功能
+"""
 
-# Original radiation cooling/heating calculation modules
-from .calculations import (
-    calculate_R_sol,
-    create_declaration_file,
-    main_calculating_gui,
-    main_cooling_gui,
-    main_heating_gui,
-)
-
-# Material comparison tool modules (merged from material_comparison_tool/src/core)
 from .simulation_engine import SimulationEngine, run_simulation_from_config
 from .building_model import BuildingModel, Zone, Surface, Construction, Material
 from .heat_balance import HeatBalance
@@ -18,13 +10,6 @@ from .weather_data import WeatherData
 from .materials import MaterialDatabase, StandardConstructions
 
 __all__ = [
-    # Original radiation cooling/heating exports
-    'calculate_R_sol',
-    'create_declaration_file',
-    'main_calculating_gui',
-    'main_cooling_gui',
-    'main_heating_gui',
-    # Material comparison tool exports
     'SimulationEngine',
     'run_simulation_from_config',
     'BuildingModel',
@@ -41,3 +26,4 @@ __all__ = [
     'MaterialDatabase',
     'StandardConstructions',
 ]
+

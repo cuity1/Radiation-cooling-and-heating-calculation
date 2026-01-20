@@ -156,6 +156,17 @@ class LanguageManager(QObject):
                 'save_results_file': '保存结果文件',
                 'solar_irradiance_prompt': '请输入太阳辐照度 S_solar (单位: W/m²):',
                 'emissivity_solar_cloud_title': '大气发射率-太阳光强云图',
+                'open_comparison_calculator': '🔬 打开对比计算器',
+                
+                # 引用对话框
+                'citation_title': '引用信息 / Citation',
+                'citation_message': '感谢使用本软件！如果您在研究中使用了本软件，请引用以下文献：',
+                'citation_cooling_title': '辐射制冷文献：',
+                'citation_heating_title': '光热文献：',
+                'citation_cooling_link': 'https://advanced.onlinelibrary.wiley.com/doi/10.1002/aenm.202506717',
+                'citation_heating_link': 'https://advanced.onlinelibrary.wiley.com/doi/10.1002/adma.202519482',
+                'citation_open_link': '打开链接',
+                'citation_thanks': '感谢您的使用！',
             },
             'en': {
                 # Main window
@@ -283,6 +294,17 @@ class LanguageManager(QObject):
                 'save_results_file': 'Save Results File',
                 'solar_irradiance_prompt': 'Enter Solar Irradiance S_solar (in W/m²):',
                 'emissivity_solar_cloud_title': 'Atmospheric Emissivity vs. Solar Irradiance Cloud Map',
+                'open_comparison_calculator': '🔬 Open Comparison Calculator',
+                
+                # Citation dialog
+                'citation_title': 'Citation Information / 引用信息',
+                'citation_message': 'Thank you for using this software! If you use this software in your research, please cite the following references:',
+                'citation_cooling_title': 'Radiative Cooling Reference:',
+                'citation_heating_title': 'Solar-Thermal Reference:',
+                'citation_cooling_link': 'https://advanced.onlinelibrary.wiley.com/doi/10.1002/aenm.202506717',
+                'citation_heating_link': 'https://advanced.onlinelibrary.wiley.com/doi/10.1002/adma.202519482',
+                'citation_open_link': 'Open Link',
+                'citation_thanks': 'Thank you for using!',
             },
         }
 

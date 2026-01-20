@@ -147,13 +147,3 @@ def check_expiration(expiration_date: datetime.datetime, email_contact: str) -> 
         webbrowser.open(url)
         sys.exit()
 
-    if language_manager.current_language == 'en':
-        print(
-            'Only two test datasets are required: reflectance in visible band and emissivity in atmospheric window'
-        )
-        print(
-            'The software will match wavelengths automatically. Please do NOT include any Chinese/English characters in txt files!'
-        )
-    else:
-        print('仅需要有两个测试数据：涉及可见光波段的反射率和涉及大气窗口的发射率')
-        print('软件会自动匹配对应波长，在txt文件中请不要出现任何汉字及英文！')
