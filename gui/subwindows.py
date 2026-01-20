@@ -319,6 +319,89 @@ class CalculatingWindow(CalculationWindow):
     def __init__(self, parent, file_paths: dict):
         super().__init__(parent, file_paths, 'map_params_calculation')
 
+    def init_ui(self):
+        super().init_ui()
+        
+        # 添加"打开对比计算器"按钮
+        self.comparison_btn = QPushButton()
+        self.comparison_btn.clicked.connect(self.open_material_comparison)
+        self.comparison_btn.setStyleSheet("font-size: 14px; padding: 8px;")
+        # 在布局中插入按钮（在执行按钮之后）
+        self.layout().insertWidget(1, self.comparison_btn)
+        self.retranslate_ui()
+
+    def retranslate_ui(self):
+        super().retranslate_ui()
+        if hasattr(self, 'comparison_btn'):
+            self.comparison_btn.setText(language_manager.get('open_comparison_calculator'))
+
+    def open_material_comparison(self):
+        """打开材料对比计算器（独立进程模式）。"""
+        try:
+            import sys
+            import os
+            import subprocess
+            import platform
+            from pathlib import Path
+
+            # 在开发环境下，直接用当前解释器 + 脚本路径启动
+            if not getattr(sys, 'frozen', False):
+                current_file = Path(__file__).resolve()
+                project_root = current_file.parent.parent
+                comparison_script = project_root / 'material_comparison_tool' / 'examples' / 'compare_materials.py'
+                if not comparison_script.exists():
+                    QMessageBox.critical(
+                        self,
+                        language_manager.get('error'),
+                        f"找不到对比计算器脚本：{comparison_script}\n"
+                        f"请确保 material_comparison_tool/examples/compare_materials.py 文件存在。"
+                    )
+                    return
+
+                env = os.environ.copy()
+                pythonpath = env.get('PYTHONPATH', '')
+                pythonpath = f"{str(project_root)}{os.pathsep}{pythonpath}" if pythonpath else str(project_root)
+                env['PYTHONPATH'] = pythonpath
+
+                subprocess.Popen(
+                    [sys.executable, str(comparison_script)],
+                    cwd=str(project_root),
+                    env=env,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                return
+
+            # 打包后的 onefile：重新调用自身 exe，并带上专用参数，让主进程分支到 compare GUI
+            python_exe = sys.executable  # 即当前 exe
+            creation_flags = 0
+            popen_kwargs = {
+                "cwd": os.getcwd(),
+                "stdout": subprocess.DEVNULL,
+                "stderr": subprocess.DEVNULL,
+            }
+            if platform.system() == 'Windows':
+                creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+                popen_kwargs["creationflags"] = creation_flags
+            else:
+                popen_kwargs["start_new_session"] = True
+
+            subprocess.Popen(
+                [python_exe, '--compare-materials'],
+                **popen_kwargs,
+            )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                language_manager.get('error'),
+                f"无法打开对比计算器：{str(e)}"
+            )
+            import traceback
+            traceback.print_exc()
+
+
+
     def run_calculation(self):
         self.execute_btn.setEnabled(False)
         self.status_label.setText(language_manager.get('calculating_msg'))

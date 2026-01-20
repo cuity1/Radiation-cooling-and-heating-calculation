@@ -1,0 +1,39 @@
+[GENERAL]
+# 默认工作目录
+DEFAULT_DIRECTORY = default
+# 声明文件名称
+DECLARE_FILE = 计算与文章发表声明.txt
+
+[EXPIRATION]
+# 程序过期时间 (格式: YYYY-MM-DD)
+EXPIRATION_DATE = 2026-02-01
+# 联系邮箱
+EMAIL_CONTACT = cuity@mail.ustc.edu.cn
+
+[PHYSICAL_CONSTANTS]
+# 普朗克常数 (J*s)
+H = 6.626e-34
+# 光速 (m/s)
+C = 3e8
+# 玻尔兹曼常数 (J/K)
+KB = 1.38e-23
+
+[CALCULATIONS]
+# 反射率波长范围 (μm)，格式: 起始波长, 结束波长
+WAVELENGTH_RANGE = 0.31,2.5
+VISIABLE_RANGE = 0.4,0.78
+# 对流换热系数 (W/m²/K)，格式: 值1, 值2, ...
+HC_VALUES = 0,3,6,9,12
+# 环境温度
+# 环境温度（°C）
+T_a1 = 20
+# 辐射制冷功能区域X轴（薄膜温度）调整
+T_filmmin = 0
+# 辐射制冷功能区域X轴（薄膜温度）调整
+T_filmmax = 150
+# 辐射制热功能区域X轴上下限，辐射制冷不用管这里
+T_filmmins = -20
+T_filmmaxs = 50
+# 太阳辐照度(W/m²)
+S_solar = 600
+

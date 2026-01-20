@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import json
 import os
 import sys
+from urllib.request import urlopen
+from urllib.error import URLError, HTTPError
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt, QEvent, QUrl
+from PyQt5.QtGui import QFont, QCloseEvent, QDesktopServices
 from PyQt5.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -27,6 +30,7 @@ from PyQt5.QtWidgets import (
 )
 
 from core.theoretical import main_theoretical_heating_vs_solar
+from gui.dialogs import CitationDialog
 from gui.i18n import COLORS, language_manager
 from gui.threads import CalculationThread
 from gui.windows import InteractivePlotWindow
@@ -68,6 +72,7 @@ class MainWindow(QMainWindow):
 
         self.init_ui()
         self.retranslate_ui()
+        self.load_notice_info()
 
     def init_ui(self):
         central_widget = QWidget()
@@ -88,6 +93,45 @@ class MainWindow(QMainWindow):
 
         # Language selector
         lang_row = QHBoxLayout()
+        # Website buttons (left side)
+        self.github_btn = QPushButton('🌐')
+        self.github_btn.clicked.connect(lambda: QDesktopServices.openUrl(
+            QUrl('https://github.com/cuity1/Radiation-cooling-and-heating-calculation')
+        ))
+        self.github_btn.setToolTip('访问GitHub')
+        self.github_btn.setFixedWidth(0)
+        self.github_btn.setFixedHeight(25)
+        self.github_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                padding: 0px;
+                font-size: 18px;
+            }
+            QPushButton:hover {
+                background-color: rgba(128, 128, 128, 0.2);
+            }
+        """)
+        lang_row.addWidget(self.github_btn)
+        self.gitee_btn = QPushButton('📦')
+        self.gitee_btn.clicked.connect(lambda: QDesktopServices.openUrl(
+            QUrl('https://gitee.com/cuity1999/Radiation-cooling-and-heating-calculation')
+        ))
+        self.gitee_btn.setToolTip('访问Gitee')
+        self.gitee_btn.setFixedWidth(0)
+        self.gitee_btn.setFixedHeight(25)
+        self.gitee_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                padding: 0px;
+                font-size: 18px;
+            }
+            QPushButton:hover {
+                background-color: rgba(128, 128, 128, 0.2);
+            }
+        """)
+        lang_row.addWidget(self.gitee_btn)
         lang_row.addStretch()
         lang_label = QLabel(language_manager.get('语言'))
         self.language_combo = QComboBox()
@@ -146,12 +190,80 @@ class MainWindow(QMainWindow):
         self.func_group.setLayout(self.func_layout)
         layout.addWidget(self.func_group)
 
+        # Notices (bottom)
+        layout.addStretch()
+        notice_layout = QVBoxLayout()
+        notice_layout.setSpacing(2)
+        notice_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.notice_info_label = QLabel("")
+        self.notice_info_label.setAlignment(Qt.AlignCenter)
+        self.notice_info_label.setStyleSheet(
+            f"color: {COLORS['secondary_text']}; font-size: 12px; line-height: 14px; margin: 0; padding: 0;"
+        )
+        notice_layout.addWidget(self.notice_info_label)
+
+        self.notice_version_label = QLabel("")
+        self.notice_version_label.setAlignment(Qt.AlignCenter)
+        self.notice_version_label.setStyleSheet(
+            f"color: {COLORS['secondary_text']}; font-size: 12px; line-height: 14px; margin: 0; padding: 0;"
+        )
+        notice_layout.addWidget(self.notice_version_label)
+
+        layout.addLayout(notice_layout)
+
         self.statusBar().showMessage(language_manager.get('info'))
         self.statusBar().setStyleSheet(
             f"background-color: {COLORS['light_bg']}; color: {COLORS['secondary_text']};"
         )
 
         self.setStyleSheet(STYLE_SHEET)
+
+    def load_notice_info(self):
+        """从远程URL加载公告信息"""
+        notice_url = "https://gitee.com/cuity1999/Radiation-cooling-and-heating-calculation/raw/main/notice.json"
+        
+        try:
+            with urlopen(notice_url, timeout=5) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                
+                # 查找info和version项
+                info_text = ""
+                version_text = ""
+                # 当前版本号固定为4.0
+                current_version = "4.0"
+                
+                if 'items' in data:
+                    for item in data['items']:
+                        if item.get('level') == 'info':
+                            info_text = item.get('text', '')
+                        elif item.get('level') == 'version':
+                            version_text = item.get('text', '')
+                
+                # 更新标签
+                if info_text:
+                    self.notice_info_label.setText(info_text)
+                
+                if version_text:
+                    self.notice_version_label.setText(f"now version：{current_version}，{version_text}")
+                else:
+                    self.notice_version_label.setText(f"now version：{current_version}")
+                        
+        except (URLError, HTTPError) as e:
+            # 网络错误，使用默认值或留空
+            print(f"Failed to load notice info: {e}")
+            self.notice_info_label.setText("")
+            self.notice_version_label.setText("")
+        except json.JSONDecodeError as e:
+            # JSON解析错误
+            print(f"Failed to parse notice JSON: {e}")
+            self.notice_info_label.setText("")
+            self.notice_version_label.setText("")
+        except Exception as e:
+            # 其他错误
+            print(f"Error loading notice info: {e}")
+            self.notice_info_label.setText("")
+            self.notice_version_label.setText("")
 
     def _on_language_combo_changed(self, idx: int):
         lang = self.language_combo.itemData(idx)
@@ -403,4 +515,10 @@ class MainWindow(QMainWindow):
             EmissivitySolarCloudDialog(self, self.file_paths).exec_()
         except Exception as e:
             QMessageBox.critical(self, language_manager.get('error'), str(e))
+
+    def closeEvent(self, event: QCloseEvent):
+        """Override close event to show citation dialog."""
+        citation_dialog = CitationDialog(self)
+        citation_dialog.exec_()
+        event.accept()
 
