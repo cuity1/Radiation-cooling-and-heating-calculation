@@ -36,6 +36,8 @@ This repository provides a **PyQt-based GUI** and **Python core library** for co
 
 The implementation is designed to be practical for materials research (spectral selectivity), thermal management, and building energy applications.
 
+**FOR  online use ：http://radiative.top:5188
+网页端功能更齐全、更加智能：http://radiative.top:5188  /**
 ### Download
 - Baidu Netdisk: https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC
 - GitHub Releases: https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases
@@ -310,7 +312,8 @@ Academic / research use. See `LICENSE` (if present) and the project statements i
 - 参数扫描与功率分量分解（便于画图/发文章）
 
 该实现面向材料光谱选择性设计、热管理与建筑节能等科研应用。
-
+**FOR  online use ：http://radiative.top:5188
+网页端功能更齐全、更加智能：http://radiative.top:5188  /**
 ### 下载
 - 百度网盘： https://pan.baidu.com/s/1RwgC-En28zfwQtf9DOfw9A?pwd=USTC
 - GitHub Releases： https://github.com/cuity1/Radiation-cooling-and-heating-calculation/releases
