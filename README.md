@@ -19,20 +19,13 @@
 [![PyQt5](https://img.shields.io/badge/PyQt5-5.15%2B-green.svg)](https://pypi.org/project/PyQt5/)
 [![License](https://img.shields.io/badge/License-Academic-orange.svg)](LICENSE)
 
-</div>
+<!--
+  README is bilingual (中文/English).
+  GitHub does not support real "button" toggles in pure Markdown.
+  This README uses a GitHub-friendly language switcher via anchor links.
+-->
 
----
 <div align="center">
-**FOR  online use **：http://radiative.top:5188/
-网页端功能更齐全、更加智能：http://radiative.top:5188/ 
- 
-</div>
-<div align="center">
-**FOR  online use ：http://radiative.top:5188/
-网页端功能更齐全、更加智能：http://radiative.top:5188
-  **
-  </div>
-
 
 ## English
 
