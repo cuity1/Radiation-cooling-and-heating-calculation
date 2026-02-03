@@ -21,7 +21,7 @@
 [![PyQt5](https://img.shields.io/badge/PyQt5-5.15%2B-green.svg)](https://pypi.org/project/PyQt5/)
 [![License](https://img.shields.io/badge/License-Academic-orange.svg)](LICENSE)
 
-
+<div align="left">
 ## English
 
 ### What is this?
