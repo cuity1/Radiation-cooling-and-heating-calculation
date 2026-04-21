@@ -19,9 +19,9 @@
 [![PyQt5](https://img.shields.io/badge/PyQt5-5.15%2B-green.svg)](https://pypi.org/project/PyQt5/)
 [![License](https://img.shields.io/badge/License-Academic-orange.svg)](LICENSE)
 
-</div>（
+</div>
 
-（本仓库网站计算模块仅逻辑开源，相关API、用户数据已去除，web大概率无法运行，仅供相关代码分析学习使用。
+（本仓库仅保证程序软件能够运行，不保证网站内容完整）
 This repository only open-sources the website’s calculation logic. Related APIs and user data have been removed, so the repository is very likely not runnable and is provided for code analysis and learning purposes only.）
 
 ---
