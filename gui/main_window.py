@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from PyQt5.QtCore import Qt, QEvent, QUrl
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QFont, QCloseEvent, QDesktopServices
 from PyQt5.QtWidgets import (
     QDialog,
@@ -56,12 +56,11 @@ class MainWindow(QMainWindow):
             'wavelength': res_path('default', 'wavelength.csv'),
         }
 
-        # 加载配置文件并进行过期检查
+        # 加载配置文件
         try:
-            from core.config import load_config, check_expiration
+            from core.config import load_config
 
             config = load_config(self.file_paths['config'])
-            check_expiration(config['EXPIRATION_DATE'], config['EMAIL_CONTACT'])
         except Exception as e:
             QMessageBox.critical(
                 self,
@@ -173,12 +172,8 @@ class MainWindow(QMainWindow):
             ('energy_map', '🗺️ ', self.open_calculating),
             ('cooling_power', '❄️ ', self.open_cooling),
             ('heating_power', '🔥 ', self.open_heating),
-            ('wind_cloud', '📈 ', self.open_yuntu),
-            ('solar_efficiency', '☀️ ', self.open_heating_vs_solar),
             ('modify_params', '⚙️ ', self.launch_config_editor),
             ('file_converter', '📄 ', self.open_file_processor),
-            ('emissivity_solar_cloud', '🌤️ ', self.open_emissivity_solar_cloud),
-            ('power_components', '📊 ', self.open_power_components),
         ]
 
         for key, prefix, func in funcs:
@@ -190,8 +185,14 @@ class MainWindow(QMainWindow):
         self.func_group.setLayout(self.func_layout)
         layout.addWidget(self.func_group)
 
-        # Notices (bottom)
+        # Tool box (bottom)
         layout.addStretch()
+
+        self.toolbox_btn = QPushButton()
+        self.toolbox_btn.clicked.connect(self.open_toolbox)
+        self.toolbox_btn.setMinimumHeight(36)
+        layout.addWidget(self.toolbox_btn)
+
         notice_layout = QVBoxLayout()
         notice_layout.setSpacing(2)
         notice_layout.setContentsMargins(0, 0, 0, 0)
@@ -231,7 +232,7 @@ class MainWindow(QMainWindow):
                 info_text = ""
                 version_text = ""
                 # 当前版本号固定为4.0
-                current_version = "4.0"
+                current_version = "4.1"
                 
                 if 'items' in data:
                     for item in data['items']:
@@ -298,6 +299,9 @@ class MainWindow(QMainWindow):
             for btn, key, prefix in self.func_buttons:
                 btn.setText(f"{prefix}{language_manager.get(key)}")
 
+        if hasattr(self, 'toolbox_btn'):
+            self.toolbox_btn.setText(f"{language_manager.get('tool_box')} / {language_manager.get('tool_box_en')}")
+
         try:
             self.statusBar().showMessage(language_manager.get('info'))
         except Exception:
@@ -331,6 +335,12 @@ class MainWindow(QMainWindow):
 
         label = QLabel(language_manager.get('select_atm_file'))
         layout.addWidget(label)
+
+        # Import custom weather DLL
+        import_btn = QPushButton(f"📥 {language_manager.get('import_custom_weather_dll')}")
+        import_btn.setMinimumHeight(35)
+        import_btn.clicked.connect(lambda: self._import_custom_atm_dll(dialog))
+        layout.addWidget(import_btn)
 
         default_dir = res_path('default')
         dll_files = []
@@ -380,6 +390,25 @@ class MainWindow(QMainWindow):
         layout.addWidget(scroll_area)
 
         dialog.exec_()
+
+    def _import_custom_atm_dll(self, dialog: QDialog):
+        """Import a custom atmospheric/weather DLL and use it immediately."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            language_manager.get('import_custom_weather_dll'),
+            '',
+            'DLL files (*.dll)',
+        )
+        if not file_path:
+            return
+
+        self.file_paths['atm_emissivity'] = file_path
+        dialog.accept()
+        QMessageBox.information(
+            self,
+            language_manager.get('info'),
+            f"{language_manager.get('file_selected')}:\n{file_path}",
+        )
 
     def _select_atm_file(self, file_name: str, dialog: QDialog):
         self.file_paths['atm_emissivity'] = res_path('default', file_name)
@@ -507,6 +536,15 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, language_manager.get('error'), str(e))
 
+    def open_angular_power_analysis(self):
+        from gui.subwindows import AngularPowerWindow
+
+        try:
+            self.check_all_files(['config', 'wavelength', 'emissivity', 'atm_emissivity'])
+            AngularPowerWindow(self, self.file_paths).exec_()
+        except Exception as e:
+            QMessageBox.critical(self, language_manager.get('error'), str(e))
+
     def open_emissivity_solar_cloud(self):
         from gui.emissivity_cloud import EmissivitySolarCloudDialog
 
@@ -515,6 +553,19 @@ class MainWindow(QMainWindow):
             EmissivitySolarCloudDialog(self, self.file_paths).exec_()
         except Exception as e:
             QMessageBox.critical(self, language_manager.get('error'), str(e))
+
+    def open_toolbox(self):
+        from gui.toolbox_dialog import ToolBoxDialog
+
+        openers = {
+            'wind_cloud': self.open_yuntu,
+            'solar_efficiency': self.open_heating_vs_solar,
+            'emissivity_solar_cloud': self.open_emissivity_solar_cloud,
+            'power_components': self.open_power_components,
+            'angular_power': self.open_angular_power_analysis,
+        }
+
+        ToolBoxDialog(self, openers=openers).exec_()
 
     def closeEvent(self, event: QCloseEvent):
         """Override close event to show citation dialog."""

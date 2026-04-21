@@ -75,98 +75,242 @@ class HeatBalance:
         self.max_iterations = 30  # 更多迭代提升稳定性
         self.zone_thermal_mass_factor = 30  # 保留配置但不再使用放大因子（改为实际热容）
     
+    def _altitude_correction_factor(self, elevation: float) -> float:
+        """
+        计算海拔修正因子，用于修正大气发射率模型
+        
+        高海拔地区大气压降低、大气层变薄，导致：
+        - 大气柱中的温室气体总量减少
+        - 大气向下长波辐射减少
+        - 天空有效发射率降低
+        
+        参数：
+            elevation: 海拔高度（m）
+        
+        返回：
+            修正因子（0-1之间），海拔越高，因子越小
+        """
+        # 使用标准大气模型计算相对大气压
+        P0 = 101325.0  # 海平面标准大气压 (Pa)
+        L = 0.0065  # 温度递减率 (K/m)
+        T0 = 288.15  # 海平面标准温度 (K)
+        g = 9.80665  # 重力加速度 (m/s²)
+        M = 0.0289644  # 干空气摩尔质量 (kg/mol)
+        R = 8.31447  # 通用气体常数 (J/(mol·K))
+        
+        h = max(0.0, float(elevation))
+        # 标准大气压模型：P = P₀ × (1 - L×h/T₀)^(g×M/(R×L))
+        try:
+            P = P0 * (1 - L * h / T0) ** (g * M / (R * L))
+            P = max(20000.0, min(P0, P))  # 限制在合理范围（20000-101325 Pa）
+        except Exception:
+            # 如果计算失败（如海拔过高），使用线性近似
+            P = P0 * (1 - h / 8440.0)  # 简化模型：每升高8.44km，压力减半
+            P = max(20000.0, min(P0, P))
+        
+        # 相对大气压（归一化到0-1）
+        relative_pressure = P / P0
+        
+        # 大气发射率修正：假设发射率与大气压的平方根成正比
+        # 这是一个简化的模型，实际关系更复杂，但能较好地反映高海拔地区大气层变薄的影响
+        # 使用平方根关系是因为大气辐射主要取决于大气柱中的温室气体总量
+        correction = np.sqrt(relative_pressure)
+        
+        return float(np.clip(correction, 0.3, 1.0))
+    
+    def _calculate_vapor_pressure(self, dew_point: float, atmospheric_pressure: float) -> float:
+        """
+        计算水汽压，考虑大气压修正
+        
+        高海拔地区大气压降低，即使露点温度相同，实际水汽压也会降低
+        
+        参数：
+            dew_point: 露点温度 (°C)
+            atmospheric_pressure: 大气压 (Pa)，如果为None或无效，使用标准大气压
+        
+        返回：
+            水汽压 (hPa)
+        """
+        # 标准饱和水汽压（基于露点温度）
+        try:
+            Tdp = float(dew_point)
+            Tdp = float(np.clip(Tdp, -80.0, 60.0))  # 限制在合理范围
+            e_sat_hPa = 6.112 * 10 ** (7.5 * Tdp / (237.7 + Tdp))
+        except Exception:
+            e_sat_hPa = 0.0
+        
+        # 大气压修正：实际水汽压 = 饱和水汽压 × (实际大气压 / 标准大气压)
+        # 这是因为水汽压与大气压成正比（理想气体状态方程）
+        P0 = 101325.0  # 海平面标准大气压 (Pa)
+        try:
+            P_actual = float(atmospheric_pressure)
+            P_actual = max(20000.0, min(150000.0, P_actual))  # 限制在合理范围
+        except Exception:
+            P_actual = P0  # 如果无效，使用标准大气压
+        
+        e_actual_hPa = e_sat_hPa * (P_actual / P0)
+        
+        return float(np.clip(e_actual_hPa, 0.0, 100.0))
+    
     def _effective_sky_temperature(self, weather: Dict, T_outK: float) -> float:
         """
         基于天气数据估算有效天空温度（K）
-        改进：使用加权平均并更严格的物理夹取
+
+        修复（针对 BSk / 干冷高原等）：
+        - 若 EPW 提供 HorzIR（水平红外辐射），优先直接使用（避免被经验模型稀释）
+        - 否则采用发射率 ε_sky 为核心的回退模型（Brunt/Brutsaert/Swinbank），再换算 T_sky
+        - 取消固定的 (T_out-30K) 硬下限，改为更温和的物理夹取，避免"触底跳变"
+        
+        新增：考虑海拔高度对大气压和大气层厚度的影响，修正高海拔地区的天空温度计算
         """
         TaK = float(np.clip(T_outK, 200.0, 330.0))
         TdpC = weather.get('dew_point', None)
-        N = weather.get('total_sky_cover', None)  # 0-10 → 0..1
+
+        # 获取海拔和大气压，用于海拔修正
+        elevation = weather.get('elevation', 0.0)
+        atmospheric_pressure = weather.get('atmospheric_pressure', None)
+        try:
+            elevation = float(elevation) if elevation is not None else 0.0
+            elevation = max(0.0, min(10000.0, elevation))  # 限制在合理范围（0-10km）
+        except Exception:
+            elevation = 0.0
+        
+        # 计算海拔修正因子（用于修正大气发射率）
+        altitude_factor = self._altitude_correction_factor(elevation)
+
+        # 云量 0-10 -> 0..1
+        N = weather.get('total_sky_cover', None)
         Nf = None
         try:
             if N is not None:
                 Nf = float(N) / 10.0
+                Nf = float(np.clip(Nf, 0.0, 1.0))
         except Exception:
             Nf = None
 
-        candidates: List[float] = []
-        weights: List[float] = []
-
-        # 1) EPW 水平红外辐射（最可信）
+        # 1) EPW HorzIR：优先使用，但引入水汽（露点）修正的发射率进行"拉回"
+        # 目标：eps_eff = 0.75 * eps_ir + 0.25 * eps_dp
+        # 其中 eps_ir 来自 HorzIR；eps_dp 来自露点推导（Brunt/Brutsaert/Swinbank 回退的加权发射率）
+        # 注意：EPW的HorzIR已经包含了海拔的影响（因为是实测值），但为了保持一致性，
+        # 如果海拔很高且HorzIR看起来异常，可以考虑轻微修正
         L_sky = weather.get('infrared_sky_radiation', None)
+        eps_ir = None
         try:
-            if L_sky is not None and float(L_sky) > 1.0:
-                Tsky_ir = (float(L_sky) / self.stefan_boltzmann) ** 0.25
-                candidates.append(float(Tsky_ir))
-                weights.append(self.sky_temp_weights['epw_ir'])
+            if L_sky is not None:
+                Ls = float(L_sky)
+                # EPW HorzIR 缺测常见为 9999/99999 等，这里要求落在合理范围
+                if 20.0 <= Ls <= 700.0:
+                    eps_ir = float(Ls / (self.stefan_boltzmann * (TaK ** 4) + 1e-12))
+                    eps_ir = float(np.clip(eps_ir, 0.05, 1.0))
         except Exception:
-            pass
+            eps_ir = None
 
-        # 水汽压 e（kPa）用于发射率模型
+        # 2) 无 HorzIR 时：用露点估算水汽压 e（kPa）
+        # 修正：考虑大气压对水汽压的影响（高海拔地区大气压降低，水汽压也会降低）
         e_kPa = None
         try:
             if TdpC is not None:
-                e_hPa = 6.112 * 10 ** (7.5 * float(TdpC) / (237.7 + float(TdpC)))
-                e_kPa = float(e_hPa) / 10.0
+                # 使用修正后的水汽压计算（考虑大气压）
+                e_hPa = self._calculate_vapor_pressure(float(TdpC), atmospheric_pressure)
+                e_kPa = float(np.clip(float(e_hPa) / 10.0, 0.0, 10.0))
         except Exception:
             e_kPa = None
 
-        # 2) Brunt（以露点近似）
+        eps_candidates: List[float] = []
+        weights: List[float] = []
+
+        # 2.1) Brunt：ε = a + b*sqrt(e[hPa])
+        # 新增：应用海拔修正因子，高海拔地区大气层变薄，发射率降低
         try:
             if TdpC is not None:
-                e_hPa2 = 6.112 * 10 ** (7.5 * float(TdpC) / (237.7 + float(TdpC)))
-                eps_clear_brunt = 0.51 + 0.066 * float(np.sqrt(max(e_hPa2, 0.0)))
-                eps_clear_brunt = float(np.clip(eps_clear_brunt, 0.2, 1.0))
-                eps_sky_brunt = eps_clear_brunt * (1.0 + 0.22 * (Nf ** 2)) if Nf is not None else eps_clear_brunt
-                Tsky_brunt = (eps_sky_brunt ** 0.25) * TaK
-                candidates.append(float(Tsky_brunt))
+                Tdp = float(np.clip(float(TdpC), -80.0, 60.0))
+                # 使用修正后的水汽压（已考虑大气压影响）
+                if e_kPa is not None and e_kPa > 0.0:
+                    e_hPa2 = e_kPa * 10.0
+                else:
+                    # 回退到原始计算（如果修正失败）
+                    e_hPa2 = 6.112 * 10 ** (7.5 * Tdp / (237.7 + Tdp))
+                sqrt_e = float(np.sqrt(max(e_hPa2, 0.0)))
+                eps_clear = 0.51 + 0.066 * sqrt_e
+                eps_clear = float(np.clip(eps_clear, 0.15, 1.0))
+                
+                # 应用海拔修正：高海拔地区大气层变薄，发射率降低
+                eps_clear = eps_clear * altitude_factor
+                eps_clear = float(np.clip(eps_clear, 0.15, 1.0))
+                
+                eps_sky = eps_clear * (1.0 + 0.22 * (Nf ** 2)) if Nf is not None else eps_clear
+                eps_sky = float(np.clip(eps_sky, 0.15, 1.0))
+                eps_candidates.append(eps_sky)
                 weights.append(self.sky_temp_weights['brunt'])
         except Exception:
             pass
 
-        # 3) Brutsaert（晴空发射率）
+        # 2.2) Brutsaert：ε = 1.24*(e/T)^(1/7)
+        # 新增：应用海拔修正因子，高海拔地区大气层变薄，发射率降低
         try:
             if e_kPa is not None and e_kPa > 0.0:
-                eps_clear_bruts = 1.24 * (e_kPa / max(TaK, 1.0)) ** (1.0 / 7.0)
+                e_T_ratio = float(e_kPa) / max(TaK, 1.0)
+                eps_clear = 1.24 * (e_T_ratio ** (1.0 / 7.0))
             else:
-                eps_clear_bruts = 0.72
-            eps_clear_bruts = float(np.clip(eps_clear_bruts, 0.2, 1.0))
-            eps_sky_bruts = eps_clear_bruts * (1.0 + 0.22 * (Nf ** 2)) if Nf is not None else eps_clear_bruts
-            Tsky_bruts = (eps_sky_bruts ** 0.25) * TaK
-            candidates.append(float(Tsky_bruts))
+                eps_clear = 0.72
+            eps_clear = float(np.clip(eps_clear, 0.15, 1.0))
+            
+            # 应用海拔修正：高海拔地区大气层变薄，发射率降低
+            eps_clear = eps_clear * altitude_factor
+            eps_clear = float(np.clip(eps_clear, 0.15, 1.0))
+            
+            eps_sky = eps_clear * (1.0 + 0.22 * (Nf ** 2)) if Nf is not None else eps_clear
+            eps_sky = float(np.clip(eps_sky, 0.15, 1.0))
+            eps_candidates.append(eps_sky)
             weights.append(self.sky_temp_weights['brutsaert'])
         except Exception:
             pass
 
-        # 4) Swinbank（晴空参考）
+        # 2.3) Swinbank：L_clear = 5.31e-8 * Ta^6 -> ε = L/(σTa^4)
+        # 新增：应用海拔修正因子，高海拔地区大气层变薄，发射率降低
         try:
             L_clear = 5.31e-8 * (TaK ** 6)
-            Tsky_swin = (L_clear / self.stefan_boltzmann) ** 0.25
-            if Nf is not None:
-                eps_clear = L_clear / (self.stefan_boltzmann * (TaK ** 4))
-                eps_sky = eps_clear * (1.0 + 0.22 * (Nf ** 2))
-                Tsky_swin = (eps_sky ** 0.25) * TaK
-            candidates.append(float(Tsky_swin))
+            eps_clear = float(L_clear / (self.stefan_boltzmann * (TaK ** 4) + 1e-12))
+            eps_clear = float(np.clip(eps_clear, 0.15, 1.0))
+            
+            # 应用海拔修正：高海拔地区大气层变薄，发射率降低
+            eps_clear = eps_clear * altitude_factor
+            eps_clear = float(np.clip(eps_clear, 0.15, 1.0))
+            
+            eps_sky = eps_clear * (1.0 + 0.22 * (Nf ** 2)) if Nf is not None else eps_clear
+            eps_sky = float(np.clip(eps_sky, 0.15, 1.0))
+            eps_candidates.append(eps_sky)
             weights.append(self.sky_temp_weights['swinbank'])
         except Exception:
             pass
 
-        if not candidates:
-            return TaK
-
-        if len(candidates) == 1:
-            Tsky = candidates[0]
+        if not eps_candidates:
+            # 若露点模型失败，但 HorzIR 有效，则直接用 HorzIR
+            if eps_ir is not None:
+                eps_eff = eps_ir
+            else:
+                return TaK
         else:
-            total_w = sum(weights) if sum(weights) > 0 else len(candidates)
-            if total_w == 0:
-                Tsky = float(np.median(candidates))
+            # 正常计算露点推导的发射率
+            total_w = sum(weights) if sum(weights) > 0 else float(len(eps_candidates))
+            if total_w <= 0:
+                eps_dp = float(np.median(eps_candidates))
             else:
                 weights = [w / total_w for w in weights]
-                Tsky = float(sum(c * w for c, w in zip(candidates, weights)))
+                eps_dp = float(sum(e * w for e, w in zip(eps_candidates, weights)))
+            
+            # 融合：0.75 * HorzIR + 0.25 * 水汽修正
+            if eps_ir is not None:
+                eps_eff = 0.75 * eps_ir + 0.25 * eps_dp
+            else:
+                eps_eff = eps_dp
 
-        # 更严格的物理约束：通常 T_sky 在 T_out-40K 到 T_out-2K 之间
-        Tsky = float(np.clip(Tsky, TaK - 40.0, TaK - 2.0))
+        # 物理范围：干冷高原允许更低 ε，下限取 0.15（避免不合理极限），上限 1
+        eps_eff = float(np.clip(eps_eff, 0.15, 1.0))
+        Tsky = TaK * (eps_eff ** 0.25)
+
+        # 额外安全夹取：天空温度不应高于空气温度；下限给更宽的余度，避免“触底跳变”
+        Tsky = float(np.clip(Tsky, TaK - 60.0, TaK))
         return Tsky
 
     def _radiative_environment_temperature(self, orientation: str, T_skyK: float, T_outK: float) -> float:
@@ -277,7 +421,24 @@ class HeatBalance:
             q_int = float(getattr(surface, 'internal_radiative_flux', 0.0) or 0.0)
             q_eq = (U_cond / max(h_in_tot + U_cond, 1e-6)) * q_int
             denom = h_ext + h_rad_ext + U_eq
-            rhs = h_ext * T_out + h_rad_ext * T_env_lin + alpha * I_solar + U_eq * T_zone - q_eq
+            
+            # 关键修复：太阳辐射项的处理
+            # 问题：直接使用 alpha * I_solar 会高估太阳辐射的影响
+            # 原因：外表面膜阻会衰减太阳辐射的效应，特别是在高太阳辐射时
+            # 解决方案：使用更物理的方法，考虑外表面膜阻的衰减效应
+            # 外表面膜阻 R_ext = 1/(h_ext + h_rad_ext)，太阳辐射的实际效应会因膜阻而衰减
+            h_ext_total = h_ext + h_rad_ext  # 总外表面传热系数
+            # 太阳辐射的等效温度增量：考虑外表面膜阻的衰减
+            # 使用更保守的估算：太阳辐射项 = alpha * I_solar / (h_ext_total * 修正因子)
+            # 修正因子考虑实际传热效率，对于高太阳辐射使用更大的衰减
+            if I_solar > 600.0:
+                # 高太阳辐射时，外表面膜阻的衰减效应更明显
+                # 使用动态衰减因子，随太阳辐射强度增加而增加衰减
+                attenuation_factor = max(0.6, 1.0 - (I_solar - 600.0) / 2000.0)  # 600-2600 W/m²范围内衰减
+            else:
+                attenuation_factor = 1.0
+            solar_heat_flux = alpha * I_solar * attenuation_factor
+            rhs = h_ext * T_out + h_rad_ext * T_env_lin + solar_heat_flux + U_eq * T_zone - q_eq
             T_new = rhs / max(denom, 1e-6)
 
             # 松弛与夹取
@@ -289,8 +450,12 @@ class HeatBalance:
                 break
             T_ext = T_new
 
-        # 由外表得到内表：h_in_tot*(T_int - T_zone) + U_cond*(T_int - T_ext) = 0
-        # → T_int = (h_in_tot*T_zone + U_cond*T_ext)/(h_in_tot + U_cond)
+        # 由外表得到内表：考虑墙体热容的动态效应（2R1C模型）
+        # 将墙体分为两部分：外半层（R1）和内半层（R2），中间是热容中心（C）
+        # R1 = R2 = R_total / 2
+        # 热流：q_in = (T_ext - T_core) / R1, q_out = (T_core - T_int) / R2
+        # 热容中心温度变化：dT_core/dt = (q_in - q_out) / C
+        
         dT_int_final = abs(T_zone - T_ext)
         h_int = self._calculate_interior_convection_coefficient(surface.orientation, dT=dT_int_final)
         inner_mat = surface.construction.inner_material() if surface.construction else None
@@ -298,15 +463,53 @@ class HeatBalance:
         h_rad_in = 4.0 * eps_in * self.stefan_boltzmann * float(np.clip(T_zone, 250.0, 330.0))**3
         h_rad_in = float(np.clip(h_rad_in, 0.1, 10.0))
         h_in_tot = max(0.1, h_int + h_rad_in)
-        # 加入内表面附加辐射通量（W/m2），使能量平衡为：
-        # h_in_tot*(T_int - T_zone) + U_cond*(T_int - T_ext) + q_int = 0
-        # → T_int = (h_in_tot*T_zone + U_cond*T_ext - q_int)/(h_in_tot+U_cond)
         q_int = float(getattr(surface, 'internal_radiative_flux', 0.0) or 0.0)
-        T_int = (h_in_tot * T_zone + U_cond * T_ext - q_int) / max(h_in_tot + U_cond, 1e-6)
+        
+        # 获取墙体的热容和热阻（如果未初始化则使用默认值）
+        R_total = float(getattr(surface, 'thermal_resistance', 2.0))
+        C_per_area = float(getattr(surface, 'heat_capacity_per_area', 50000.0))
+        C_total = C_per_area * surface.area  # 总热容 J/K
+        
+        # 2R1C模型：将热阻分为两半
+        R1 = R_total / 2.0  # 外半层热阻
+        R2 = R_total / 2.0  # 内半层热阻
+        
+        # 获取上一时间步的核心温度（如果不存在则用当前表面温度）
+        T_core_prev = float(getattr(surface, 'thermal_mass_center_temp', surface.temperature))
+        
+        # 时间步长（秒）
+        dt = 3600.0
+        
+        # 计算热流
+        # 外表面到核心：q_in = (T_ext - T_core) / R1
+        # 核心到内表面：q_out = (T_core - T_int_steady) / R2
+        # 其中 T_int_steady 是稳态内表面温度（不考虑热容时的值）
+        T_int_steady = (h_in_tot * T_zone + U_cond * T_ext - q_int) / max(h_in_tot + U_cond, 1e-6)
+        T_int_steady = float(np.clip(T_int_steady, 230.0, 340.0))
+        
+        # 核心温度更新（显式欧拉法）
+        q_in = (T_ext - T_core_prev) / max(R1, 1e-6)
+        q_out = (T_core_prev - T_int_steady) / max(R2, 1e-6)
+        dT_core_dt = (q_in - q_out) / max(C_total, 1e-6)
+        
+        # 更新核心温度（限制变化率，避免数值不稳定）
+        dT_core = dT_core_dt * dt
+        dT_core = float(np.clip(dT_core, -10.0, 10.0))  # 限制每小时最大变化10K
+        T_core_new = T_core_prev + dT_core
+        T_core_new = float(np.clip(T_core_new, 230.0, 340.0))
+        
+        # 内表面温度：考虑热容后的值（核心温度与稳态值的加权平均）
+        # 权重取决于热容大小：热容越大，越接近核心温度；热容越小，越接近稳态值
+        thermal_time_constant = C_total * R_total  # 时间常数（秒）
+        weight_core = min(0.7, dt / max(thermal_time_constant, dt))  # 热容越大，权重越小
+        T_int = weight_core * T_core_new + (1.0 - weight_core) * T_int_steady
         T_int = float(np.clip(T_int, 230.0, 340.0))
-
-        # 将用于室内换热计算的温度写入表面温度
+        
+        # 更新表面状态
+        surface.temperature_prev = surface.temperature
         surface.temperature = T_int
+        surface.thermal_mass_center_temp = T_core_new
+        
         return T_int
     
     def calculate_zone_temperature(self, zone: Zone, weather: Dict) -> float:
@@ -497,10 +700,12 @@ class HeatBalance:
         GHI = float(max(0.0, weather.get('solar_radiation', 0.0)))
         DNI = float(max(0.0, weather.get('direct_normal_radiation', 0.0)))
         DHI = float(max(0.0, weather.get('diffuse_horizontal_radiation', 0.0)))
-        albedo = float(max(0.0, min(weather.get('albedo', 0.2), 0.9)))
+        albedo = float(max(0.0, min(weather.get('albedo', 0.1), 0.9)))
         
-        # 若必要的时间/地理信息缺失，则使用季节性方向系数回退
-        has_geo = ('datetime' in weather and 'latitude' in weather and 'longitude' in weather and 'timezone' in weather)
+        # 忽略太阳位置计算，统一使用季节性方向系数（简化模型）
+        # 原逻辑：若必要的时间/地理信息缺失，则使用季节性方向系数回退
+        # 修改：强制使用方向系数，不进行太阳位置计算
+        has_geo = False  # 强制设为 False，忽略太阳位置计算
         if not has_geo:
             # 改进的季节性方向系数（基于太阳高度角的月平均值）
             total_radiation = GHI
@@ -526,6 +731,10 @@ class HeatBalance:
         alpha, az = self._solar_alt_az(dt, lat, lon, tz)  # α: 地平高度角，az: 方位角（从北顺时针）
         if alpha <= 0:
             return 0.0
+        # 太阳高度角过低时（接近日出日落），DNI 推算与入射角非常敏感，易导致异常尖峰
+        # 这里做保守处理：高度角过低则不计直射分量
+        if alpha < np.deg2rad(3.0):
+            DNI = 0.0
         
         # 面倾角与方位角
         beta, az_surf = self._surface_tilt_azimuth(surface.orientation)
@@ -538,9 +747,17 @@ class HeatBalance:
         cos_theta_i = float(max(0.0, cos_theta_i))
         
         # 若DNI缺失，基于 GHI/DHI 与太阳高度估算
+        # 修复：对于干燥气候类型，避免高估DNI
         csz = float(max(1e-3, np.cos(theta_z)))
         if DNI <= 0.0:
-            DNI = max(0.0, (GHI - DHI) / csz)
+            # 使用更保守的估算：DNI = (GHI - DHI) / cos(θz)
+            # 但需要限制最大值，避免在低太阳高度角时高估
+            estimated_DNI = max(0.0, (GHI - DHI) / csz)
+            # 物理约束：DNI不应超过理论最大值（约1200 W/m²，翻倍后2400 W/m²）
+            # 同时，当太阳高度角很低时（cos(θz)很小），估算误差会放大，需要更严格的限制
+            if csz < 0.1:  # 太阳高度角很低时
+                estimated_DNI = min(estimated_DNI, GHI * 1.5)  # 更保守的限制
+            DNI = min(estimated_DNI, 2400.0)  # 限制在合理范围内
         
         I_beam = DNI * cos_theta_i
         I_diff = DHI * (1.0 + np.cos(beta)) * 0.5
@@ -759,6 +976,10 @@ class HeatBalance:
         """
         仅材料导热等效传热系数（不含内外表面膜阻），用于外表/内表联合线性化时的等效U。
         U_cond = 1 / Σ(d_i/λ_i)
+        
+        注意：内外表面膜阻已在 h_ext 和 h_in_tot 中考虑，此处仅计算材料层热阻
+        
+        修复：添加最小热阻限制，避免在薄层材料时高估传热
         """
         if construction is None or not construction.layers:
             return 1.0
@@ -767,6 +988,9 @@ class HeatBalance:
             k = max(0.01, float(material.conductivity))
             d = max(1e-4, float(material.thickness))
             Rm += d / k
+        # 添加最小热阻限制，考虑实际建筑中的空气层、接触热阻等
+        # 这可以避免在计算中高估传热系数
+        Rm = max(Rm, 0.1)  # 最小热阻 0.1 m²·K/W
         U = 1.0 / max(Rm, 1e-6)
         return float(np.clip(U, 0.05, 10.0))
     

@@ -1,0 +1,1 @@
+import{e as s}from"./index-ClXkQX_a.js";async function o(t){const{data:a}=await s.post("/jobs",t);return a}async function e(){const{data:t}=await s.get("/jobs");return t}async function c(t){const{data:a}=await s.get(`/jobs/${t}`);return a}async function r(t){const{data:a}=await s.get(`/jobs/${t}/result`);return a}export{r as a,o as c,c as g,e as l};

@@ -1,0 +1,1 @@
+import{n as t,k as e}from"./index-ClXkQX_a.js";async function o(n){const s=n&&n.trim()?`?q=${encodeURIComponent(n.trim())}`:"";return e(`/qa/questions${s}`)}async function i(n){return e(`/qa/questions/${n}`)}async function r(n,s){return t("/qa/questions",{title:n,body:s})}async function c(n,s){return t(`/qa/questions/${n}/answers`,{body:s})}export{c as a,r as c,i as g,o as l};

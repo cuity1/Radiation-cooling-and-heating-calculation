@@ -41,10 +41,17 @@ class LanguageManager(QObject):
                 'emissivity_solar_cloud': '大气发射率-太阳光强云图',
                 'power_components': '功率分量曲线图',
                 'not_selected': '未选择',
-                'energy_map': '节能地图绘制计算',
+                'energy_map': '功量地图绘制计算',
                 'cooling_power': '辐射制冷功率计算',
                 'heating_power': '辐射制热功率计算',
                 'wind_cloud': '风速与制冷效率云图',
+                'angular_power': '天空窗口角分辨分析',
+                'angular_power_title': '天空窗口角分辨分析',
+                'angular_power_delta_t': '表面与环境温差 (ΔT, °C):',
+                'angular_power_generate': '生成角分辨功率图',
+                'angular_power_calculating': '计算中...',
+                'angular_power_done': '计算完成',
+                'angular_power_failed': '计算失败',
                 'modify_params': '参数修改',
                 'solar_efficiency': '光热转化效率计算',
                 'file_converter': '输入文件处理',
@@ -113,6 +120,7 @@ class LanguageManager(QObject):
                 'clear': '晴朗',
                 'cloudy': '少云',
                 'select_atm_file': '请选择大气透过率文件：',
+                'import_custom_weather_dll': '导入自定义透过率文件',
 
                 # 精度
                 'calculation_precision': '计算精度',
@@ -140,7 +148,7 @@ class LanguageManager(QObject):
                 'copyright': '辐射制冷/制热计算工具 QQ群：767753318 - 联系作者',
 
                 # 其他 UI 文本
-                'map_params_calculation': '地图绘制参数计算',
+                'map_params_calculation': '节能地图绘制参数计算',
                 'map_plot_contact': '辐射制冷/制热节能地图绘制联系微信cuity_',
                 'heating_power_calculation': '辐射制热功率计算',
                 'wind_cloud_title': '风速与制冷效率云图',
@@ -157,6 +165,8 @@ class LanguageManager(QObject):
                 'solar_irradiance_prompt': '请输入太阳辐照度 S_solar (单位: W/m²):',
                 'emissivity_solar_cloud_title': '大气发射率-太阳光强云图',
                 'open_comparison_calculator': '🔬 打开对比计算器',
+                'tool_box': '工具箱',
+                'tool_box_en': 'Tool box',
                 
                 # 引用对话框
                 'citation_title': '引用信息 / Citation',
@@ -183,6 +193,13 @@ class LanguageManager(QObject):
                 'cooling_power': 'Radiation Cooling Power',
                 'heating_power': 'Radiation Heating Power',
                 'wind_cloud': 'Wind Speed & Cooling Efficiency',
+                'angular_power': 'Angular Profile (Sky Window)',
+                'angular_power_title': 'Angular Profile (Sky Window)',
+                'angular_power_delta_t': 'Surface-to-ambient temperature difference ΔT (°C):',
+                'angular_power_generate': 'Generate Angular Profile Plots',
+                'angular_power_calculating': 'Calculating...',
+                'angular_power_done': 'Calculation complete',
+                'angular_power_failed': 'Calculation failed',
                 'modify_params': 'Modify Parameters',
                 'solar_efficiency': 'Solar-Thermal Efficiency',
                 'file_converter': 'File Converter Tool',
@@ -251,6 +268,7 @@ class LanguageManager(QObject):
                 'clear': 'Clear',
                 'cloudy': 'Cloudy',
                 'select_atm_file': 'Select atmospheric transmittance file:',
+                'import_custom_weather_dll': 'Import custom weather file',
 
                 # Precision
                 'calculation_precision': 'Calculation Precision',
@@ -278,7 +296,7 @@ class LanguageManager(QObject):
                 'copyright': 'Radiative Cooling/Heating Calculator QQ Group: 767753318 - Contact Author',
 
                 # Other UI text
-                'map_params_calculation': 'Map Plotting Parameter Calculation',
+                'map_params_calculation': 'Energy Map Plotting Parameter Calculation',
                 'map_plot_contact': 'For energy-saving maps of radiative cooling/heating, contact on WeChat: cuity_',
                 'heating_power_calculation': 'Radiative Heating Power Calculation',
                 'wind_cloud_title': 'Wind Speed & Cooling Efficiency Cloud Map',
@@ -295,6 +313,8 @@ class LanguageManager(QObject):
                 'solar_irradiance_prompt': 'Enter Solar Irradiance S_solar (in W/m²):',
                 'emissivity_solar_cloud_title': 'Atmospheric Emissivity vs. Solar Irradiance Cloud Map',
                 'open_comparison_calculator': '🔬 Open Comparison Calculator',
+                'tool_box': 'Tool box',
+                'tool_box_en': 'Tool box',
                 
                 # Citation dialog
                 'citation_title': 'Citation Information / 引用信息',

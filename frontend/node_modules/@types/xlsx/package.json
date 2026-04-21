@@ -1,0 +1,21 @@
+{
+    "name": "@types/xlsx",
+    "version": "0.0.35",
+    "description": "TypeScript definitions for xlsx",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "themauveavenger",
+            "url": "https://github.com/themauveavenger"
+        }
+    ],
+    "main": "",
+    "repository": {
+        "type": "git",
+        "url": "https://www.github.com/DefinitelyTyped/DefinitelyTyped.git"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "90b537b74b0b4000e27683f84bb7ba89469d6232db891ea52db06bb42a5b6294",
+    "typeScriptVersion": "2.0"
+}

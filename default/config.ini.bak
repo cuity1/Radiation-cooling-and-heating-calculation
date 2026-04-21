@@ -35,5 +35,5 @@ T_filmmax = 150
 T_filmmins = -20
 T_filmmaxs = 50
 # 太阳辐照度(W/m²)
-S_solar = 1000
+S_solar = 600
 

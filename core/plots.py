@@ -51,6 +51,7 @@ def generate_wind_cooling_plot(file_paths: dict, S_solar: float | None = None, s
     reflectance_data = load_reflectance(file_paths['reflectance'])
     spectrum_data = load_spectrum(file_paths['spectrum'])
     WAVELENGTH_RANGE = config['WAVELENGTH_RANGE']
+    WAVELENGTH_RANGE_EMISSIVITY = config['WAVELENGTH_RANGE_EMISSIVITY']
 
     ref_wavelength, reflectance_values = filter_wavelength(reflectance_data, 0, 1, WAVELENGTH_RANGE)
     spec_wavelength, spectrum_values = filter_wavelength(spectrum_data, 0, 1, WAVELENGTH_RANGE)
@@ -58,15 +59,19 @@ def generate_wind_cooling_plot(file_paths: dict, S_solar: float | None = None, s
     R_sol = calculate_weighted_reflectance(reflectance_values, interpolated_spectrum, ref_wavelength)
 
     _, emissivity_interpolated, emissivityatm_interpolated = load_and_interpolate_emissivity(
-        file_paths['wavelength'], file_paths['emissivity'], file_paths['atm_emissivity']
+        file_paths['wavelength'], file_paths['emissivity'], file_paths['atm_emissivity'],
+        wavelength_range=WAVELENGTH_RANGE_EMISSIVITY
     )
 
-    # average emissivity from raw emissivity file
+    # average emissivity from raw emissivity file (使用发射率波长范围过滤)
     data = np.loadtxt(file_paths['emissivity'])
     wavelength_um = data[:, 0]
     emissivity = data[:, 1]
-    wavelength_m = wavelength_um * 1e-6
-    avg_emissivity = calculate_average_emissivity(wavelength_m, emissivity, T_a)
+    filtered_wavelength_um, filtered_emissivity = filter_wavelength(
+        np.column_stack((wavelength_um, emissivity)), 0, 1, WAVELENGTH_RANGE_EMISSIVITY
+    )
+    wavelength_m = filtered_wavelength_um * 1e-6
+    avg_emissivity = calculate_average_emissivity(wavelength_m, filtered_emissivity, T_a)
 
     emissivitys = avg_emissivity
     alpha_s = 1 - R_sol
@@ -96,11 +101,22 @@ def generate_wind_cooling_plot(file_paths: dict, S_solar: float | None = None, s
             except ValueError:
                 delta_T_values[i, j] = find_approximate_solution(emissivity_atm, wind_speed, XMIN, XMAX)
 
+    # 计算与旧版脚本一致的对流换热系数云图 h_conv(wind, emissivity, ΔT)
+    hc_values_matrix = np.zeros_like(delta_T_values)
+    for i, emissivity_atm in enumerate(emissivity_variable):
+        for j, wind_speed in enumerate(wind):
+            dt = delta_T_values[i, j]
+            if np.isnan(dt):
+                hc_values_matrix[i, j] = np.nan
+            else:
+                hc_values_matrix[i, j] = calculate_convection_coefficient(wind_speed, dt, T_a)
+
     if skip_dialog:
         return {
             'delta_T_values': delta_T_values,
             'emissivity_variable': emissivity_variable,
             'wind': wind,
+            'hc_values_matrix': hc_values_matrix,
         }
 
     fig, ax = plt.subplots(figsize=(10, 8))

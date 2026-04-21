@@ -117,6 +117,107 @@ class CalculationWindow(QDialog):
         self.status_label.setStyleSheet(f"color: {COLORS['error']}; font-weight: bold;")
 
 
+class AngularPowerWindow(QDialog):
+    """Window for angular power distribution analysis."""
+    def __init__(self, parent, file_paths: dict):
+        super().__init__(parent)
+        self.setWindowTitle(language_manager.get('angular_power_title'))
+        self.setFixedSize(550, 300)
+        self.file_paths = file_paths.copy()
+        self.calc_thread = None
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(30, 30, 30, 30)
+
+        # Temperature difference input
+        h_row = QHBoxLayout()
+        h_label = QLabel(language_manager.get('angular_power_delta_t'))
+        self.delta_t_input = QLineEdit("0.0")
+        self.delta_t_input.setValidator(QDoubleValidator(-100.0, 100.0, 2))
+        h_row.addWidget(h_label)
+        h_row.addWidget(self.delta_t_input)
+        layout.addLayout(h_row)
+
+        self.execute_btn = QPushButton(language_manager.get('angular_power_generate'))
+        self.execute_btn.clicked.connect(self.run_calculation)
+        layout.addWidget(self.execute_btn)
+
+        self.status_label = QLabel('')
+        self.status_label.setStyleSheet(f"color: {COLORS['accent']}; font-weight: bold;")
+        layout.addWidget(self.status_label)
+
+        self.setStyleSheet(STYLE_SHEET)
+
+    def run_calculation(self):
+        try:
+            delta_t = float(self.delta_t_input.text().strip())
+            self.execute_btn.setEnabled(False)
+            self.status_label.setText(language_manager.get('angular_power_calculating'))
+            self.status_label.setStyleSheet(f"color: {COLORS['accent']}; font-weight: bold;")
+
+            from core.calculations import calculate_angular_power
+            
+            self.calc_thread = CalculationThread(
+                calculate_angular_power,
+                self.file_paths,
+                temp_diff_c=delta_t
+            )
+            self.calc_thread.finished.connect(self.on_calculation_finished)
+            self.calc_thread.error.connect(self.on_calculation_error)
+            self.calc_thread.start()
+
+        except ValueError as e:
+            QMessageBox.warning(self, "输入错误", f"无效的输入值: {e}")
+            self.execute_btn.setEnabled(True)
+        except Exception as e:
+            self.on_calculation_error(str(e))
+
+    def on_calculation_finished(self, result):
+        self.execute_btn.setEnabled(True)
+        self.status_label.setText(language_manager.get('angular_power_done'))
+        self.status_label.setStyleSheet(f"color: {COLORS['success']}; font-weight: bold;")
+        self.plot_results(result)
+
+    def on_calculation_error(self, error_msg: str):
+        self.execute_btn.setEnabled(True)
+        QMessageBox.critical(self, language_manager.get('error'), f"{language_manager.get('calculation_failed')}: {error_msg}")
+        self.status_label.setText(language_manager.get('angular_power_failed'))
+        self.status_label.setStyleSheet(f"color: {COLORS['error']}; font-weight: bold;")
+
+    def plot_results(self, result):
+        theta_deg = result['theta_deg']
+        power_density = result['power_density_per_sr']
+
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+
+        # Plot 1: Cartesian plot
+        ax1.plot(theta_deg, power_density, lw=2)
+        ax1.set_xlabel("Zenith angle (deg)")
+        ax1.set_ylabel("Radiative power density (W/m²/sr)")
+        ax1.set_title("Angular radiative power density")
+        ax1.grid(True, linestyle='--', alpha=0.6)
+        ax1.set_xlim(0, 90)
+
+        # Plot 2: Polar plot
+        ax2.remove()
+        ax2 = fig.add_subplot(1, 2, 2, projection='polar')
+        theta_rad = np.deg2rad(theta_deg)
+        ax2.plot(theta_rad, power_density, lw=2)
+        ax2.set_theta_zero_location('N')  # 0 degrees at the top
+        ax2.set_theta_direction(-1)  # Clockwise
+        ax2.set_rlabel_position(90)
+        ax2.set_thetagrids(np.arange(0, 91, 15))
+        ax2.set_title("Hemispherical angular distribution", pad=20)
+
+        fig.tight_layout()
+
+        dlg = InteractivePlotWindow(fig, parent=self, title='Angular Profile')
+        dlg.exec_()
+
+
 class CoolingWindow(CalculationWindow):
     def __init__(self, parent, file_paths: dict):
         self.angle_steps = 2000
@@ -665,7 +766,7 @@ class PowerComponentWindow(QDialog):
                 main_power_components_gui,
                 self.file_paths,
                 h_cond_wm2k=h_cond,
-                enable_natural_convection=True,
+                enable_natural_convection=False,
             )
             self.calc_thread.finished.connect(self.on_calculation_finished)
             self.calc_thread.error.connect(self.on_calculation_error)
@@ -868,19 +969,68 @@ class WindCoolingPlotWindow(QDialog):
 
     def preview_wind_cooling_plot(self, result):
         try:
+            from matplotlib.colors import LinearSegmentedColormap
+            from core.config import load_config
+            from core.physics import calculate_convection_coefficient
+
             delta_T_values = result['delta_T_values']
             emissivity_variable = result['emissivity_variable']
             wind = result['wind']
 
-            fig, ax = plt.subplots(figsize=(10, 8))
+            # 兼容旧版本：如果结果中没有 h_conv，则根据当前 ΔT 与风速重算
+            hc_values_matrix = result.get('hc_values_matrix')
+            if hc_values_matrix is None:
+                config = load_config(self.file_paths['config'])
+                T_a1 = config['T_a1']
+                T_a = T_a1 + 273.15
+                hc_values_matrix = np.zeros_like(delta_T_values)
+                for i, _ in enumerate(emissivity_variable):
+                    for j, w in enumerate(wind):
+                        dt = delta_T_values[i, j]
+                        if np.isnan(dt):
+                            hc_values_matrix[i, j] = np.nan
+                        else:
+                            hc_values_matrix[i, j] = calculate_convection_coefficient(w, dt, T_a)
+
+            # 自定义蓝-白-红渐变色，和旧脚本保持一致风格
+            colors = [(0, 'darkblue'), (0.25, 'blue'), (0.5, 'white'), (0.75, 'red'), (1, 'darkred')]
+            cm = LinearSegmentedColormap.from_list('temp_diff', colors, N=100)
+
+            # 读取 S_solar 以用于总标题
+            try:
+                cfg = load_config(self.file_paths['config'])
+                S_solar = float(cfg.get('S_solar', 0.0))
+            except Exception:
+                S_solar = None
+
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
             X, Y = np.meshgrid(wind, emissivity_variable)
-            contourf = ax.contourf(X, Y, delta_T_values, levels=50, cmap='viridis')
-            cbar = fig.colorbar(contourf, ax=ax, pad=0.02)
-            cbar.set_label('ΔT (°C)')
-            ax.set_xlabel('Wind (m/s)')
-            ax.set_ylabel('atomosphere Emissivity')
-            ax.set_title('Wind vs Cooling Efficiency (ΔT) Cloud Map')
-            ax.grid(True, linestyle='--', alpha=0.3)
+
+            # 左：温度差云图
+            cp1 = ax1.contourf(X, Y, delta_T_values, levels=100, cmap=cm, alpha=0.9)
+            contours1 = ax1.contour(X, Y, delta_T_values, levels=10, colors='black', alpha=0.5, linewidths=0.5)
+            ax1.clabel(contours1, inline=True, fontsize=8, fmt='%.1f')
+            cbar1 = fig.colorbar(cp1, ax=ax1, pad=0.01)
+            cbar1.set_label('ΔT (°C)', fontsize=12)
+            ax1.set_xlabel('Wind speed (m/s)', fontsize=12)
+            ax1.set_ylabel('Atmospheric emissivity', fontsize=12)
+            ax1.set_title('Temperature Difference', fontsize=14)
+            ax1.grid(True, linestyle='--', alpha=0.6)
+
+            # 右：对流换热系数云图
+            cp2 = ax2.contourf(X, Y, hc_values_matrix, levels=100, cmap='viridis', alpha=0.9)
+            contours2 = ax2.contour(X, Y, hc_values_matrix, levels=10, colors='black', alpha=0.5, linewidths=0.5)
+            ax2.clabel(contours2, inline=True, fontsize=8, fmt='%.1f')
+            cbar2 = fig.colorbar(cp2, ax=ax2, pad=0.01)
+            cbar2.set_label('h_conv (W/m²·K)', fontsize=12)
+            ax2.set_xlabel('Wind speed (m/s)', fontsize=12)
+            ax2.set_ylabel('Atmospheric emissivity', fontsize=12)
+            ax2.set_title('Convection Coefficient', fontsize=14)
+            ax2.grid(True, linestyle='--', alpha=0.6)
+
+            if S_solar is not None:
+                fig.suptitle(f'Wind Speed and Cooling Efficiency (S_solar = {S_solar:.1f} W/m²)', fontsize=16)
+
             fig.tight_layout()
 
             dlg = InteractivePlotWindow(fig, parent=self, title=language_manager.get('wind_cloud_title'))
@@ -890,17 +1040,68 @@ class WindCoolingPlotWindow(QDialog):
 
     def export_wind_cooling_data(self, result):
         try:
-            save_path, _ = QFileDialog.getSaveFileName(self, language_manager.get('save_results_file'), '', 'CSV files (*.csv)')
-            if save_path:
-                delta_T_values = result['delta_T_values']
-                emissivity_variable = result['emissivity_variable']
-                wind = result['wind']
+            from core.config import load_config
+            from core.physics import calculate_convection_coefficient
+            import os
 
-                df_matrix = pd.DataFrame(delta_T_values, index=emissivity_variable, columns=np.round(wind, 3))
-                df_matrix.index.name = 'emissivity'
-                df_matrix.columns.name = 'wind'
-                df_matrix.to_csv(save_path)
-                QMessageBox.information(self, language_manager.get('success'), f"{language_manager.get('saved_to')} {save_path}")
+            save_path, _ = QFileDialog.getSaveFileName(
+                self,
+                language_manager.get('save_results_file'),
+                '',
+                'Excel files (*.xlsx);;CSV files (*.csv)',
+            )
+            if not save_path:
+                return
+
+            delta_T_values = result['delta_T_values']
+            emissivity_variable = result['emissivity_variable']
+            wind = result['wind']
+
+            # 同 preview，一并得到 h_conv 矩阵，兼容无 hc_values_matrix 的情况
+            hc_values_matrix = result.get('hc_values_matrix')
+            if hc_values_matrix is None:
+                cfg = load_config(self.file_paths['config'])
+                T_a1 = cfg['T_a1']
+                T_a = T_a1 + 273.15
+                hc_values_matrix = np.zeros_like(delta_T_values)
+                for i, _ in enumerate(emissivity_variable):
+                    for j, w in enumerate(wind):
+                        dt = delta_T_values[i, j]
+                        if np.isnan(dt):
+                            hc_values_matrix[i, j] = np.nan
+                        else:
+                            hc_values_matrix[i, j] = calculate_convection_coefficient(w, dt, T_a)
+
+            # 目标导出为带两个 sheet 的 Excel（与旧版保持功能一致）
+            root, ext = os.path.splitext(save_path)
+            if ext.lower() != '.xlsx':
+                save_path = root + '.xlsx'
+
+            df_temp = pd.DataFrame(
+                delta_T_values,
+                index=np.round(emissivity_variable, 3),
+                columns=np.round(wind, 3),
+            )
+            df_temp.index.name = 'emissivity'
+            df_temp.columns.name = 'wind_speed'
+
+            df_hconv = pd.DataFrame(
+                hc_values_matrix,
+                index=np.round(emissivity_variable, 3),
+                columns=np.round(wind, 3),
+            )
+            df_hconv.index.name = 'emissivity'
+            df_hconv.columns.name = 'wind_speed'
+
+            with pd.ExcelWriter(save_path) as writer:
+                df_temp.to_excel(writer, sheet_name='Temperature_Difference')
+                df_hconv.to_excel(writer, sheet_name='Convection_Coefficient')
+
+            QMessageBox.information(
+                self,
+                language_manager.get('success'),
+                f"{language_manager.get('saved_to')} {save_path}",
+            )
         except Exception as e:
             QMessageBox.critical(self, language_manager.get('error'), f"保存数据时出错: {e}")
 

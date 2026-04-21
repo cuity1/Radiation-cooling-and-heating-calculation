@@ -1,15 +1,10 @@
-"""Configuration loading and expiration checks."""
+"""Configuration loading."""
 
 from __future__ import annotations
 
 import configparser
 import datetime
 import sys
-import webbrowser
-
-from PyQt5.QtWidgets import QMessageBox
-
-from gui.i18n import language_manager
 
 
 def load_config(config_path: str) -> dict:
@@ -28,6 +23,7 @@ def load_config(config_path: str) -> dict:
         'PHYSICAL_CONSTANTS': ['H', 'C', 'KB'],
         'CALCULATIONS': [
             'WAVELENGTH_RANGE',
+            # 'WAVELENGTH_RANGE_EMISSIVITY' has fallback default value
             'VISIABLE_RANGE',
             'HC_VALUES',
             'T_a1',
@@ -80,8 +76,16 @@ def load_config(config_path: str) -> dict:
     T_filmmins = config.getfloat('CALCULATIONS', 'T_filmmins')
     T_filmmaxs = config.getfloat('CALCULATIONS', 'T_filmmaxs')
 
-    WAVELENGTH_RANGE_STR = config.get('CALCULATIONS', 'WAVELENGTH_RANGE')
-    VISIABLE_RANGE_STR = config.get('CALCULATIONS', 'VISIABLE_RANGE')
+    def _normalize_range_str(s: str) -> str:
+        """Replace Chinese/ideographic commas with ASCII comma in a string."""
+        return s.replace('\uff0c', ',').replace('\u3001', ',')
+
+    WAVELENGTH_RANGE_STR = _normalize_range_str(
+        config.get('CALCULATIONS', 'WAVELENGTH_RANGE'))
+    WAVELENGTH_RANGE_EMISSIVITY_STR = _normalize_range_str(
+        config.get('CALCULATIONS', 'WAVELENGTH_RANGE_EMISSIVITY', fallback='8,13'))
+    VISIABLE_RANGE_STR = _normalize_range_str(
+        config.get('CALCULATIONS', 'VISIABLE_RANGE'))
     S_solar = config.get('CALCULATIONS', 'S_solar')
 
     try:
@@ -93,6 +97,14 @@ def load_config(config_path: str) -> dict:
         sys.exit(1)
 
     try:
+        WAVELENGTH_RANGE_EMISSIVITY = [float(x.strip()) for x in WAVELENGTH_RANGE_EMISSIVITY_STR.split(',')]
+        if len(WAVELENGTH_RANGE_EMISSIVITY) != 2:
+            raise ValueError('WAVELENGTH_RANGE_EMISSIVITY 应包含两个值: 起始波长和结束波长。')
+    except ValueError as ve:
+        print(f"配置文件中的 WAVELENGTH_RANGE_EMISSIVITY 格式错误: {ve}")
+        sys.exit(1)
+
+    try:
         VISIABLE_RANGE = [float(x.strip()) for x in VISIABLE_RANGE_STR.split(',')]
         if len(VISIABLE_RANGE) != 2:
             raise ValueError('VISIABLE_RANGE 应包含两个值: 起始波长和结束波长。')
@@ -100,7 +112,7 @@ def load_config(config_path: str) -> dict:
         print(f"配置文件中的 VISIABLE_RANGE 格式错误: {ve}")
         sys.exit(1)
 
-    HC_VALUES_STR = config.get('CALCULATIONS', 'HC_VALUES')
+    HC_VALUES_STR = _normalize_range_str(config.get('CALCULATIONS', 'HC_VALUES'))
     try:
         HC_VALUES = [float(x.strip()) for x in HC_VALUES_STR.split(',')]
     except ValueError as ve:
@@ -118,6 +130,7 @@ def load_config(config_path: str) -> dict:
         'C1': C1,
         'C2': C2,
         'WAVELENGTH_RANGE': WAVELENGTH_RANGE,
+        'WAVELENGTH_RANGE_EMISSIVITY': WAVELENGTH_RANGE_EMISSIVITY,
         'VISIABLE_RANGE': VISIABLE_RANGE,
         'HC_VALUES': HC_VALUES,
         'T_a1': T_a1,
@@ -129,21 +142,4 @@ def load_config(config_path: str) -> dict:
     }
 
 
-def check_expiration(expiration_date: datetime.datetime, email_contact: str) -> None:
-    """检查程序是否过期"""
-    current_date = datetime.datetime.now()
-    if current_date > expiration_date:
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setWindowTitle(language_manager.get('warning'))
-        msg.setText(
-            'This version has expired. Please update to ensure calculation accuracy.'
-            if language_manager.current_language == 'en'
-            else '此版本已过期，为了不影响计算精度，请进行版本更新。'
-        )
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec_()
-        url = 'https://wwja.lanzoue.com/b0knk1xve'
-        webbrowser.open(url)
-        sys.exit()
 

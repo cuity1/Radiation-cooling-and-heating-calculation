@@ -50,7 +50,15 @@ class HVACSystem:
         
         # 物理常数
         self.air_cp = 1005  # J/kg·K
-        self.latent_heat = 2500000  # J/kg（水的汽化热）
+        # 汽化潜热 L_v(T) 与 core/calculations.py 保持一致
+        T_C = self.cooling_setpoint - 273.15
+        if T_C < 0:
+            L_v = 2.501e6  # 冰的升华潜热
+        elif T_C <= 100:
+            L_v = (2501.0 - 2.36 * T_C - 0.0016 * T_C**2) * 1000
+        else:
+            L_v = (2257.0 - 0.5 * (T_C - 100)) * 1000
+        self.latent_heat = L_v  # J/kg
     
     def calculate_sensible_load(self, T_zone: float, T_cool_set: float, T_heat_set: float) -> float:
         """

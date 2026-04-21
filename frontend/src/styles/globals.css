@@ -1,0 +1,441 @@
+/* KaTeX math rendering (must come before @tailwind) */
+@import "katex/dist/katex.min.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Theme (Current Theme - Preserved) */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  
+  /* Background Colors */
+  --bg-default: #1C1C1E;
+  --bg-panel: rgba(28, 28, 30, 0.6);
+  --bg-subtle: rgba(28, 28, 30, 0.4);
+  --bg-elevated: rgba(44, 44, 46, 0.8);
+  
+  /* Text Colors - 夜间主题：浅色文本 */
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --text-muted: rgba(255, 255, 255, 0.55);
+  --text-tertiary: rgba(255, 255, 255, 0.35);
+  
+  /* Accent Text Colors - 夜间主题：浅色强调文本 */
+  --text-accent: #5AC8FA;
+  --text-accent-hover: #7AD3FB;
+  
+  /* Status Text Colors - 夜间主题：浅色状态文本 */
+  --text-success: #30D158;
+  --text-success-muted: rgba(48, 209, 88, 0.8);
+  --text-warning: #FFD60A;
+  --text-warning-muted: rgba(255, 214, 10, 0.8);
+  --text-danger: #FF6B6B;
+  --text-danger-muted: rgba(255, 107, 107, 0.8);
+  
+  /* Accent Colors */
+  --accent: #0A84FF;
+  --accent-soft: rgba(10, 132, 255, 0.15);
+  --accent-lighter: rgba(10, 132, 255, 0.25);
+  
+  /* Status Colors */
+  --success: #30D158;
+  --success-soft: rgba(48, 209, 88, 0.15);
+  --success-border: rgba(48, 209, 88, 0.35);
+  --success-text: var(--text-success);
+  --warning: #FF9F0A;
+  --warning-soft: rgba(255, 159, 10, 0.15);
+  --warning-border: rgba(255, 159, 10, 0.35);
+  --warning-text: var(--text-warning);
+  --danger: #FF453A;
+  --danger-soft: rgba(255, 69, 58, 0.15);
+  --danger-border: rgba(255, 69, 58, 0.35);
+  --danger-text: var(--text-danger);
+  
+  /* Border Colors */
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(10, 132, 255, 0.3);
+  
+  /* Shadows (更精致、高级的阴影) */
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --shadow-glass-lg: 0 20px 60px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --shadow-glow: 0 0 0 1px rgba(10, 132, 255, 0.25), 0 8px 24px rgba(10, 132, 255, 0.18);
+  --shadow-glow-lg: 0 0 0 1px rgba(10, 132, 255, 0.3), 0 12px 40px rgba(10, 132, 255, 0.22);
+  --shadow-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  
+  /* Background Gradients (更精致、绚丽的渐变) */
+  --bg-gradient-top: radial-gradient(ellipse 1200px 600px at 50% -10%, rgba(10, 132, 255, 0.1), transparent 60%);
+  --bg-gradient-right: radial-gradient(ellipse 800px 800px at 100% 20%, rgba(88, 86, 214, 0.08), transparent 70%);
+  --bg-gradient-left: radial-gradient(ellipse 700px 700px at 0% 80%, rgba(64, 200, 224, 0.06), transparent 65%);
+  --bg-gradient-base: linear-gradient(180deg, #000000 0%, #1A1A1C 25%, #1C1C1E 50%, #1C1C1E 75%, #000000 100%);
+  
+  /* Glass Backgrounds (更精致的毛玻璃) */
+  --glass-bg: rgba(28, 28, 30, 0.65);
+  --glass-light-bg: rgba(44, 44, 46, 0.55);
+  --glass-strong-bg: rgba(28, 28, 30, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-light-border: rgba(255, 255, 255, 0.12);
+  --glass-strong-border: rgba(255, 255, 255, 0.14);
+  
+  /* Scrollbar */
+  --scrollbar-track: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
+  
+  /* Hover Overlay */
+  --hover-overlay: rgba(255, 255, 255, 0.05);
+  
+  /* Modal Overlay */
+  --modal-overlay: rgba(0, 0, 0, 0.4);
+}
+
+/* Light Theme (New Academic/Research Style) */
+[data-theme="light"] {
+  color-scheme: light;
+  
+  /* Background Colors - Warm beige tones (米色系，视觉舒适) */
+  --bg-default: #F7F5F0;
+  --bg-panel: rgba(252, 250, 245, 0.9);
+  --bg-subtle: rgba(245, 243, 238, 0.7);
+  --bg-elevated: rgba(255, 253, 248, 0.95);
+  
+  /* Text Colors - 日间主题：深色文本 */
+  --text-primary: #1F2937;
+  --text-secondary: #374151;
+  --text-muted: #6B7280;
+  --text-tertiary: #9CA3AF;
+  
+  /* Accent Text Colors - 日间主题：深色强调文本 */
+  --text-accent: #2563EB;
+  --text-accent-hover: #1D4ED8;
+  
+  /* Status Text Colors - 日间主题：深色状态文本 */
+  --text-success: #059669;
+  --text-success-muted: #047857;
+  --text-warning: #D97706;
+  --text-warning-muted: #B45309;
+  --text-danger: #DC2626;
+  --text-danger-muted: #B91C1C;
+  
+  /* Accent Colors - Academic blue (参考 Tailwind blue-600, 降低亮度避免刺眼) */
+  --accent: #4F7CD6;
+  --accent-soft: rgba(79, 124, 214, 0.1);
+  --accent-lighter: rgba(79, 124, 214, 0.15);
+  
+  /* Status Colors - Adjusted for light theme */
+  --success: #34C759;
+  --success-soft: rgba(52, 199, 89, 0.12);
+  --success-border: rgba(52, 199, 89, 0.3);
+  --success-text: var(--text-success);
+  --warning: #FF9500;
+  --warning-soft: rgba(255, 149, 0, 0.12);
+  --warning-border: rgba(255, 149, 0, 0.3);
+  --warning-text: var(--text-warning);
+  --danger: #FF3B30;
+  --danger-soft: rgba(255, 59, 48, 0.12);
+  --danger-border: rgba(255, 59, 48, 0.3);
+  --danger-text: var(--text-danger);
+  
+  /* Border Colors - Subtle grays (参考 GitHub #e1e4e8, 更柔和的边框) */
+  --border-default: rgba(0, 0, 0, 0.1);
+  --border-light: rgba(0, 0, 0, 0.14);
+  --border-accent: rgba(79, 124, 214, 0.25);
+  
+  /* Shadows - Softer shadows with warm tones (米色系阴影，视觉舒适) */
+  --shadow-glass: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 253, 248, 0.85) inset;
+  --shadow-glass-lg: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 254, 250, 0.90) inset;
+  --shadow-glow: 0 0 0 1px rgba(79, 124, 214, 0.15), 0 4px 12px rgba(79, 124, 214, 0.06);
+  --shadow-glow-lg: 0 0 0 1px rgba(79, 124, 214, 0.18), 0 8px 24px rgba(79, 124, 214, 0.08);
+  --shadow-inner-glow: inset 0 1px 0 rgba(255, 253, 248, 0.95);
+  
+  /* Background Gradients - Warm beige gradients (米色渐变，视觉舒适) */
+  --bg-gradient-top: radial-gradient(ellipse 1200px 600px at 50% -10%, rgba(245, 230, 200, 0.12), transparent 60%);
+  --bg-gradient-right: radial-gradient(ellipse 800px 800px at 100% 20%, rgba(250, 235, 215, 0.10), transparent 70%);
+  --bg-gradient-left: radial-gradient(ellipse 700px 700px at 0% 80%, rgba(255, 245, 230, 0.08), transparent 65%);
+  --bg-gradient-base: linear-gradient(180deg, #F5F3ED 0%, #F7F5F0 30%, #F7F5F0 70%, #F5F3ED 100%);
+  
+  /* Glass Backgrounds - Warm beige glass (米色毛玻璃，视觉舒适) */
+  --glass-bg: rgba(255, 253, 248, 0.75);
+  --glass-light-bg: rgba(255, 251, 245, 0.70);
+  --glass-strong-bg: rgba(255, 254, 250, 0.88);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-light-border: rgba(0, 0, 0, 0.12);
+  --glass-strong-border: rgba(0, 0, 0, 0.14);
+  
+  /* Scrollbar */
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+  
+  /* Hover Overlay (更明显的悬停反馈) */
+  --hover-overlay: rgba(0, 0, 0, 0.06);
+  
+  /* Modal Overlay (参考 Material UI, 更柔和的遮罩) */
+  --modal-overlay: rgba(0, 0, 0, 0.3);
+}
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* Dynamic background using CSS variables */
+  background: 
+    var(--bg-gradient-top),
+    var(--bg-gradient-right),
+    var(--bg-gradient-left),
+    var(--bg-gradient-base);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 确保所有文本元素都继承正确的文本颜色（但允许特定元素覆盖） */
+p, span, h1, h2, h3, h4, h5, h6, li, td, th, label {
+  color: var(--text-primary);
+}
+
+/* div元素默认继承，但允许通过类名覆盖 */
+div {
+  color: inherit;
+}
+
+/* ============================================
+   文本颜色系统说明
+   ============================================
+   
+   日间主题（Light Theme）使用深色文本：
+   - text-primary: #1F2937 (深灰，主文本)
+   - text-secondary: #374151 (中深灰，次要文本)
+   - text-muted: #6B7280 (中灰，弱化文本)
+   - text-tertiary: #9CA3AF (浅灰，最弱文本)
+   - text-accent: #2563EB (深蓝，强调文本)
+   - text-success: #059669 (深绿，成功文本)
+   - text-warning: #D97706 (深橙，警告文本)
+   - text-danger: #DC2626 (深红，危险文本)
+   
+   夜间主题（Dark Theme）使用浅色文本：
+   - text-primary: rgba(255,255,255,0.95) (近白色，主文本)
+   - text-secondary: rgba(255,255,255,0.75) (浅白，次要文本)
+   - text-muted: rgba(255,255,255,0.55) (中白，弱化文本)
+   - text-tertiary: rgba(255,255,255,0.35) (浅白，最弱文本)
+   - text-accent: #5AC8FA (浅蓝，强调文本)
+   - text-success: #30D158 (浅绿，成功文本)
+   - text-warning: #FFD60A (浅黄，警告文本)
+   - text-danger: #FF6B6B (浅红，危险文本)
+   
+   使用方式：
+   - 基础文本：text-text-primary, text-text-secondary, text-text-muted, text-text-tertiary
+   - 强调文本：text-text-accent, text-text-accent-hover
+   - 状态文本：text-text-success, text-text-warning, text-text-danger
+   - 状态文本（弱化）：text-text-success-muted, text-text-warning-muted, text-text-danger-muted
+   ============================================ */
+
+/* 确保按钮primary变体在所有主题下都使用白色文字（因为背景是强调色） */
+.bg-accent.text-white,
+button.bg-accent {
+  color: #ffffff !important;
+}
+
+/* 滚动条样式 - 支持主题切换 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* 毛玻璃效果工具类 - 支持主题切换 */
+@layer utilities {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+  
+  .glass-light {
+    background: var(--glass-light-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--glass-light-border);
+  }
+  
+  .glass-strong {
+    background: var(--glass-strong-bg);
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    border: 1px solid var(--glass-strong-border);
+  }
+  
+  /* 平滑过渡 */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* 闪烁动画 - 用于参数设置按钮 (使用CSS变量以支持主题) */
+  @keyframes blink-glow {
+    0%, 100% {
+      box-shadow: 0 0 10px var(--accent-soft), 0 0 20px var(--accent-soft), 0 0 0 1px var(--border-accent);
+      opacity: 1;
+    }
+    50% {
+      box-shadow: 0 0 20px var(--accent-lighter), 0 0 30px var(--accent-soft), 0 0 0 1px var(--border-accent);
+      opacity: 0.95;
+    }
+  }
+  
+  .animate-blink-glow {
+    animation: blink-glow 1.5s ease-in-out infinite;
+  }
+
+  /* 帮助按钮专用的淡蓝色炫光动画（更显眼） */
+  @keyframes help-blink-glow {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgba(90, 200, 250, 0.9),
+        0 0 12px rgba(90, 200, 250, 0.8),
+        0 0 28px rgba(90, 200, 250, 0.9);
+      background-color: rgba(90, 200, 250, 0.18);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow:
+        0 0 0 2px rgba(90, 200, 250, 1),
+        0 0 22px rgba(90, 200, 250, 1),
+        0 0 40px rgba(90, 200, 250, 1);
+      background-color: rgba(90, 200, 250, 0.26);
+      transform: scale(1.05);
+    }
+  }
+
+  .animate-help-blink {
+    animation: help-blink-glow 1.4s ease-in-out infinite;
+  }
+  
+  /* 慢速旋转动画 */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
+
+  /* ── Page Enter Animations ── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeSlideLeft {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeSlideRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes scaleFadeIn {
+    from { opacity: 0; transform: scale(0.94); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(32px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes backdropFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  .animate-fade-slide-up   { animation: fadeSlideUp    0.45s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-fade-slide-left  { animation: fadeSlideLeft  0.45s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-fade-slide-right { animation: fadeSlideRight 0.45s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-scale-fade-in    { animation: scaleFadeIn    0.4s  cubic-bezier(0.16,1,0.3,1) both; }
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, var(--bg-subtle) 25%, var(--bg-elevated) 50%, var(--bg-subtle) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+    border-radius: 8px;
+  }
+  .surface-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+  .text-gradient-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--text-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .card-lift { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s cubic-bezier(0.16,1,0.3,1); }
+  .card-lift:hover { transform: translateY(-2px); }
+  .status-dot-pulse { animation: statusPulse 2s ease-in-out infinite; }
+  .ripple { position: relative; overflow: hidden; }
+  .ripple::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    transform: scale(0); opacity: 0;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+  .ripple:active::after { transform: scale(2); opacity: 1; transition: transform 0s, opacity 0s; }
+  .modal-animate-in    { animation: modalSlideUp  0.3s cubic-bezier(0.16,1,0.3,1) both; }
+  .modal-backdrop-in   { animation: backdropFadeIn 0.25s ease both; }
+  .focus-ring          { outline: none; }
+  .focus-ring:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: inherit; }
+
+  .stagger-1  { animation-delay: 60ms; }
+  .stagger-2  { animation-delay: 120ms; }
+  .stagger-3  { animation-delay: 180ms; }
+  .stagger-4  { animation-delay: 240ms; }
+  .stagger-5  { animation-delay: 300ms; }
+  .stagger-6  { animation-delay: 360ms; }
+  .stagger-7  { animation-delay: 420ms; }
+  .stagger-8  { animation-delay: 480ms; }
+  .stagger-9  { animation-delay: 540ms; }
+  .stagger-10 { animation-delay: 600ms; }
+}

@@ -187,7 +187,7 @@ class FileProcessorDialog(QDialog):
                     try:
                         numeric_values.append(float(cell))
                     except (ValueError, TypeError):
-                        numbers = re.findall(r'-?\d+\.?\d*[eE]?[+-]?\d*', str(cell))
+                        numbers = re.findall(r'-?\d*\.?\d+(?:[eE][+-]?\d+)?', str(cell))
                         if numbers:
                             numeric_values.append(float(numbers[0]))
 
@@ -231,8 +231,8 @@ class FileProcessorDialog(QDialog):
                 '−': '-',
             }
         )
-        encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig', 'gb18030', 'latin1']
-        number_pattern = re.compile(r"[-+]?\d*[\.,]?\d+(?:[eE][+-]?\d+)?%?")
+        encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig', 'gb18030', 'latin1', 'utf-16']
+        number_pattern = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\d*\.\d+)(?:[eE][+-]?\d+)?%?")
         for encoding in encodings:
             try:
                 rows = []
@@ -263,7 +263,7 @@ class FileProcessorDialog(QDialog):
 
         try:
             if file_ext == '.csv':
-                encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig', 'gb18030']
+                encodings = ['utf-8', 'gbk', 'gb2312', 'utf-8-sig', 'gb18030', 'latin1', 'utf-16']
                 df = None
                 for encoding in encodings:
                     try:

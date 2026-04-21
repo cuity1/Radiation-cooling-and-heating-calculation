@@ -14,6 +14,28 @@ logger = logging.getLogger(__name__)
 # 简单的EPW缓存，减少重复IO与解析
 _EPW_CACHE = {}
 
+def _is_missing_value(x) -> bool:
+    """Return True if x represents a common EPW/CSV missing-value code."""
+    if x is None:
+        return True
+    try:
+        if pd.isna(x):
+            return True
+    except Exception:
+        pass
+    try:
+        v = float(x)
+    except Exception:
+        return True
+    # Common missing/sentinel codes seen in weather datasets (EPW/CSV)
+    # - 99/999/9999/99999, -99/-999/-9999, 1e20-style placeholders
+    if v in (99.0, 999.0, 9999.0, 99999.0, -99.0, -999.0, -9999.0, -99999.0):
+        return True
+    if abs(v) >= 1e19:
+        return True
+    return False
+
+
 class WeatherData:
     """
     天气数据处理器
@@ -183,14 +205,179 @@ class WeatherData:
             hour_offset = pd.to_timedelta((self.data['Hour'].fillna(1) - 1).clip(lower=0, upper=23).astype(int), unit='h')
             self.data['DateTime'] = base_date + hour_offset
 
-            # 数据清洗：相对湿度限制在 0-100%
+            # ---------- 缺失码检测与插值修复（9999/99999/99 等） ----------
+            # 策略：
+            # - 将常见缺失码统一转为 NaN
+            # - 对连续变量按时间插值（限制最大连续缺失长度）
+            # - 对离散/等级变量使用邻近值填充（ffill/bfill）
+            max_gap_hours = 6
+
+            def _mark_missing_to_nan(col_name: str) -> int:
+                if col_name not in self.data.columns:
+                    return 0
+                mask = self.data[col_name].apply(_is_missing_value)
+                n = int(mask.sum())
+                if n > 0:
+                    self.data.loc[mask, col_name] = np.nan
+                return n
+
+            # 先把所有列的缺失码标记为 NaN（但跳过 DateTime）
+            missing_total = 0
+            for col in self.data.columns:
+                if col == 'DateTime':
+                    continue
+                missing_total += _mark_missing_to_nan(col)
+            if missing_total > 0:
+                self.data_quality_issues.append(
+                    f"缺失码检测：共 {missing_total} 个单元格被识别为缺失值并转为 NaN"
+                )
+
+            # 确保 DateTime 作为时间索引以进行 time 插值
+            try:
+                self.data['DateTime'] = pd.to_datetime(self.data['DateTime'])
+                self.data = self.data.sort_values('DateTime')
+                self.data = self.data.set_index('DateTime')
+            except Exception:
+                pass
+
+            # 连续变量：时间插值（仅在缺失段长度 <= max_gap_hours 时生效）
+            continuous_cols = [
+                'DBT', 'DPT', 'RH', 'AtmPres',
+                'HorzIR',
+                'GloHorzRad', 'DirNormRad', 'DifHorzRad',
+                'ExtHorzRad', 'ExtDirRad',
+                'WindSpeed', 'WindDir',
+                'Albedo',
+                'PrecipitableWater', 'AerosolOpticalDepth',
+                'Visibility', 'Ceiling',
+                'SnowDepth', 'DaysSinceLastSnow',
+                'LiquidPrecipDepth', 'LiquidPrecipRate'
+            ]
+            interpolated_cells = 0
+            for col in continuous_cols:
+                if col not in self.data.columns:
+                    continue
+                s = pd.to_numeric(self.data[col], errors='coerce')
+                na_before = int(s.isna().sum())
+                if na_before == 0:
+                    self.data[col] = s
+                    continue
+                # time 插值 + gap 限制
+                try:
+                    s2 = s.interpolate(method='time', limit=max_gap_hours, limit_direction='both')
+                except Exception:
+                    s2 = s.interpolate(limit=max_gap_hours, limit_direction='both')
+                na_after = int(s2.isna().sum())
+                interpolated_cells += max(0, na_before - na_after)
+                self.data[col] = s2
+
+            if interpolated_cells > 0:
+                self.data_quality_issues.append(
+                    f"时间插值修复：在最大缺失段 {max_gap_hours} 小时约束下，共修复 {interpolated_cells} 个数据点"
+                )
+
+            # 离散/等级变量：邻近填充
+            discrete_cols = ['TotalSkyCover', 'OpaqueSkyCover', 'PresentWeatherObs', 'PresentWeatherCodes', 'Source']
+            filled_cells = 0
+            for col in discrete_cols:
+                if col not in self.data.columns:
+                    continue
+                s = self.data[col]
+                na_before = int(pd.isna(s).sum())
+                if na_before == 0:
+                    continue
+                s2 = s.ffill(limit=max_gap_hours).bfill(limit=max_gap_hours)
+                na_after = int(pd.isna(s2).sum())
+                filled_cells += max(0, na_before - na_after)
+                self.data[col] = s2
+            if filled_cells > 0:
+                self.data_quality_issues.append(
+                    f"邻近填充修复：在最大缺失段 {max_gap_hours} 小时约束下，共修复 {filled_cells} 个离散数据点"
+                )
+
+            # 物理范围夹取（对插值后的连续变量再做一次）
             if 'RH' in self.data.columns:
-                rh_out_of_range = (self.data['RH'] > 100).sum()
-                if rh_out_of_range > 0:
+                # RH：0-100%
+                rh = pd.to_numeric(self.data['RH'], errors='coerce')
+                clipped = rh.clip(0, 100)
+                if int((clipped != rh).sum()) > 0:
                     self.data_quality_issues.append(
-                        f"相对湿度超过 100%：{int(rh_out_of_range)} 条记录，已截断"
+                        f"相对湿度超过 0-100%：{int((clipped != rh).sum())} 条记录，已截断"
                     )
-                    self.data['RH'] = self.data['RH'].clip(0, 100)
+                self.data['RH'] = clipped
+
+            if 'WindSpeed' in self.data.columns:
+                ws = pd.to_numeric(self.data['WindSpeed'], errors='coerce')
+                self.data['WindSpeed'] = ws.clip(0, 60)
+
+            if 'AtmPres' in self.data.columns:
+                ap = pd.to_numeric(self.data['AtmPres'], errors='coerce')
+                self.data['AtmPres'] = ap.clip(20000, 120000)
+
+            if 'Albedo' in self.data.columns:
+                al = pd.to_numeric(self.data['Albedo'], errors='coerce')
+                self.data['Albedo'] = al.clip(0.0, 0.9)
+
+            # 太阳辐射字段：统一夹取（允许 NaN 保留，后续 get_hourly_data 会回退 0）
+            solar_cols = ['GloHorzRad', 'DirNormRad', 'DifHorzRad', 'ExtHorzRad', 'ExtDirRad']
+            for col in solar_cols:
+                if col in self.data.columns:
+                    max_vals = {
+                        'GloHorzRad': 3000.0,
+                        'DirNormRad': 2400.0,
+                        'DifHorzRad': 1000.0,
+                        'ExtHorzRad': 3000.0,
+                        'ExtDirRad': 2400.0
+                    }
+                    max_val = max_vals.get(col, 1500.0)
+                    s = pd.to_numeric(self.data[col], errors='coerce')
+                    self.data[col] = s.clip(lower=0.0, upper=max_val)
+
+            # GHI >= DHI 一致性修正
+            if 'GloHorzRad' in self.data.columns and 'DifHorzRad' in self.data.columns:
+                ghi = pd.to_numeric(self.data['GloHorzRad'], errors='coerce')
+                dhi = pd.to_numeric(self.data['DifHorzRad'], errors='coerce')
+                inconsistent = (ghi < dhi) & ghi.notna() & dhi.notna()
+                if int(inconsistent.sum()) > 0:
+                    self.data.loc[inconsistent, 'DifHorzRad'] = ghi.loc[inconsistent]
+                    self.data_quality_issues.append(
+                        f"数据一致性修正：{int(inconsistent.sum())} 条记录的散射辐射超过全球辐射，已修正"
+                    )
+
+            # 还原索引
+            try:
+                self.data = self.data.reset_index()
+            except Exception:
+                pass
+
+            # ---------- 原有清洗逻辑后续继续 ----------
+
+            # 数据清洗：太阳辐射数据（对Csa/Csb等气候类型特别重要）
+            # 已在上方做过缺失码/插值/夹取；此处保持兼容，不再重复缺失码检测
+            solar_cols = ['GloHorzRad', 'DirNormRad', 'DifHorzRad', 'ExtHorzRad', 'ExtDirRad']
+            for col in solar_cols:
+                if col in self.data.columns:
+                    max_vals = {
+                        'GloHorzRad': 3000.0,
+                        'DirNormRad': 2400.0,
+                        'DifHorzRad': 1000.0,
+                        'ExtHorzRad': 3000.0,
+                        'ExtDirRad': 2400.0
+                    }
+                    max_val = max_vals.get(col, 1500.0)
+                    s = pd.to_numeric(self.data[col], errors='coerce')
+                    self.data[col] = s.clip(lower=0.0, upper=max_val)
+            
+            # 数据一致性检查：GHI >= DHI（全球水平辐射应大于等于散射辐射）
+            if 'GloHorzRad' in self.data.columns and 'DifHorzRad' in self.data.columns:
+                inconsistent = (self.data['GloHorzRad'] < self.data['DifHorzRad']) & \
+                              (self.data['GloHorzRad'].notna()) & (self.data['DifHorzRad'].notna())
+                if inconsistent.sum() > 0:
+                    # 修正：将 DHI 限制为不超过 GHI
+                    self.data.loc[inconsistent, 'DifHorzRad'] = self.data.loc[inconsistent, 'GloHorzRad']
+                    self.data_quality_issues.append(
+                        f"数据一致性修正：{int(inconsistent.sum())} 条记录的散射辐射超过全球辐射，已修正"
+                    )
 
             # 丢弃无法解析的时间行，并按时间排序
             self.data = self.data.dropna(subset=['DateTime']).sort_values('DateTime').reset_index(drop=True)
@@ -286,16 +473,49 @@ class WeatherData:
         idx = (self.data['DateTime'] - datetime_obj).abs().argmin()
         row = self.data.iloc[idx]
         
+        # 修复：对太阳辐射数据进行缺失值和异常值检查
+        # 对于Csa和Csb等气候类型，确保太阳辐射数据正确
+        def _safe_solar_rad(col_name, default=0.0, max_val=3000.0):
+            """安全读取太阳辐射数据，处理缺失值和异常值"""
+            if col_name not in self.data.columns:
+                return default
+            val = row[col_name]
+            if _is_missing_value(val) or pd.isna(val):
+                return default
+            try:
+                val_float = float(val)
+                # 限制在合理范围内：0 到 max_val W/m²（范围已翻倍，避免特殊情况）
+                # 对于水平面全球辐射，理论最大值约为1400 W/m²，翻倍后设为3000 W/m²
+                val_float = max(0.0, min(val_float, max_val))
+                return val_float
+            except (ValueError, TypeError):
+                return default
+        
+        # 读取太阳辐射数据（带验证，范围已翻倍）
+        glohorz = _safe_solar_rad('GloHorzRad', default=0.0, max_val=3000.0)
+        dirnorm = _safe_solar_rad('DirNormRad', default=0.0, max_val=2400.0)
+        difhorz = _safe_solar_rad('DifHorzRad', default=0.0, max_val=1000.0)
+        
+        # 数据一致性检查：确保 GHI >= DHI（全球水平辐射应大于等于散射辐射）
+        if glohorz < difhorz:
+            # 如果数据不一致，尝试修正：假设 DHI 不应超过 GHI
+            if difhorz > 0:
+                # 如果 GHI 很小但 DHI 很大，可能是数据错误，将 DHI 限制为 GHI
+                difhorz = min(difhorz, glohorz)
+            else:
+                # 如果 GHI 为0，DHI 也应为0
+                difhorz = 0.0
+        
         # 修复：添加月份信息，用于季节性太阳辐射计算
         return {
             'temperature': float(row['DBT']),  # °C
             'humidity': float(row['RH']) / 100,  # 转换为 0-1
-            'solar_radiation': float(row['GloHorzRad']),  # W/m²
-            'direct_normal_radiation': float(row['DirNormRad']),  # W/m²
-            'diffuse_horizontal_radiation': float(row['DifHorzRad']),  # W/m²
+            'solar_radiation': glohorz,  # W/m²（已验证）
+            'direct_normal_radiation': dirnorm,  # W/m²（已验证）
+            'diffuse_horizontal_radiation': difhorz,  # W/m²（已验证）
             'wind_speed': float(row['WindSpeed']),  # m/s
             'atmospheric_pressure': float(row['AtmPres']),  # Pa
-            'infrared_sky_radiation': float(row['HorzIR']) if 'HorzIR' in self.data.columns and pd.notna(row['HorzIR']) else None,  # 近似 W/m²
+            'infrared_sky_radiation': (None if _is_missing_value(row['HorzIR']) else float(row['HorzIR'])) if 'HorzIR' in self.data.columns else None,  # 近似 W/m²
             'dew_point': float(row['DPT']) if 'DPT' in self.data.columns and pd.notna(row['DPT']) else None,  # °C
             'total_sky_cover': float(row['TotalSkyCover']) if 'TotalSkyCover' in self.data.columns and pd.notna(row['TotalSkyCover']) else None,  # 0-10
             'month': int(row['Month']),  # 月份（1-12），用于季节性太阳辐射计算
@@ -303,7 +523,7 @@ class WeatherData:
             'latitude': float(self.location_info.get('latitude', 0.0)),
             'longitude': float(self.location_info.get('longitude', 0.0)),
             'timezone': float(self.location_info.get('timezone', 0.0)),
-            'albedo': float(row['Albedo']) if 'Albedo' in self.data.columns and pd.notna(row['Albedo']) else 0.2,
+            'albedo': float(row['Albedo']) if 'Albedo' in self.data.columns and pd.notna(row['Albedo']) else 0.1,
             'annual_mean_temperature': float(getattr(self, 'annual_mean_dbt', np.nan)) if hasattr(self, 'annual_mean_dbt') and self.annual_mean_dbt is not None else None
         }
     

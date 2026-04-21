@@ -1,0 +1,20 @@
+﻿Start Date,1-Jan
+End Date,2-Dec
+Structure:,8-story building model
+Total Wall  Area,2267.8 m²
+Total Glass  Area,1003.5 m²
+Roof Area,281.4 m²
+Floor Area:,321.60 m² per floor
+Dimensions per Floor:,Length 26.8 m × Width 10.5 m × Height 3.8 m
+Total Floor Area,2251.2 m²
+Coverage:,Includes walls and roof only
+System Type:,Ideal air-conditioning system 
+Maximum Heating Supply Air Temperature,50
+Maximum Cooling Supply Air Temperature,13
+Maximum Heating Supply Air Humidity Ratio,0.0156
+Minimum Cooling Supply Air Humidity Ratio,0.0077
+Cooling Setpoint Temperature:,
+Heating Setpoint Temperature:,
+Air Changes per Hour,
+People,
+Lights Watts per Zone Floor Area (W/m²),

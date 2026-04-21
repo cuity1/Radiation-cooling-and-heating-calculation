@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-
+from pathlib import Path
 from scipy.interpolate import interp1d, PchipInterpolator
 
 
@@ -23,9 +23,18 @@ def load_reflectance(file_path: str) -> np.ndarray:
 
 
 def load_spectrum(file_path: str) -> np.ndarray:
-    """加载光谱数据"""
+    """加载光谱数据，支持 CSV/TXT 和 Excel (.xlsx/.xls) 文件"""
     try:
-        return pd.read_excel(file_path).to_numpy()
+        path = Path(file_path)
+        ext = path.suffix.lower()
+        if ext in (".xlsx", ".xls"):
+            try:
+                df = pd.read_excel(file_path, sheet_name=0, engine="openpyxl")
+            except Exception:
+                df = pd.read_excel(file_path, sheet_name=0, engine="xlrd")
+            return df.to_numpy()
+        else:
+            return pd.read_csv(file_path, sep=None, engine="python").to_numpy()
     except Exception as e:
         raise Exception(f"加载光谱数据时出错: {e}")
 
@@ -140,18 +149,18 @@ def load_and_interpolate_emissivity(
     """加载并插值发射率和大气发射率数据
     
     Args:
-        wavelength_csv: 波长文件路径 (CSV)
+        wavelength_csv: 波长文件路径 (CSV) - 仅用于兼容，现已不使用
         emissivity_txt: 发射率文件路径 (TXT)
         emissivity_atm_txt: 大气发射率文件路径 (TXT)
-        wavelength_range: 波长范围 (微米)
+        wavelength_range: 波长范围 (微米)，默认 (8, 13)
         
     Returns:
         tuple: (wavelengths, emissivity, emissivity_atm)
     """
     try:
-        # 加载波长数据
-        data_csv = pd.read_csv(wavelength_csv)
-        X = data_csv.iloc[:, 0].to_numpy()
+        # 使用 wavelength_range 参数生成波长网格（替代 Wavelength.csv）
+        wavelength_min, wavelength_max = wavelength_range
+        X = np.arange(wavelength_min, wavelength_max + 0.01, 0.01)
 
         # 加载材料发射率
         emis_df = pd.read_csv(
@@ -185,8 +194,23 @@ def load_and_interpolate_emissivity(
         xu, uniq_idx = np.unique(x, return_index=True)
         yu = y[uniq_idx]
         
+        # 使用 wavelength_range 过滤原始数据后再插值
+        xu_filtered = xu[(xu >= wavelength_min) & (xu <= wavelength_max)]
+        yu_filtered = yu[(xu >= wavelength_min) & (xu <= wavelength_max)]
+
+        # 诊断信息：帮助定位过滤后无数据的根因
+        if xu_filtered.size == 0:
+            x_min, x_max = (xu.min(), xu.max()) if xu.size > 0 else (np.nan, np.nan)
+            raise ValueError(
+                f"发射率数据在波长范围 {wavelength_min}–{wavelength_max} μm 内为空。"
+                f" 数据文件: {emissivity_txt}。"
+                f" 文件内波长范围: {x_min:.4f}–{x_max:.4f} μm，"
+                f" 预期范围: {wavelength_min}–{wavelength_max} μm。"
+                f" 请检查文件内容或调整 WAVELENGTH_RANGE_EMISSIVITY 配置。"
+            )
+
         # 插值到目标波长
-        emissivity_interpolated = np.interp(X, xu, yu)
+        emissivity_interpolated = np.interp(X, xu_filtered, yu_filtered)
 
         # 加载大气发射率
         atm_df = pd.read_csv(
@@ -216,8 +240,22 @@ def load_and_interpolate_emissivity(
         xau, uniq_idx2 = np.unique(xa, return_index=True)
         yau = ya[uniq_idx2]
         
+        # 使用 wavelength_range 过滤原始数据后再插值
+        xau_filtered = xau[(xau >= wavelength_min) & (xau <= wavelength_max)]
+        yau_filtered = yau[(xau >= wavelength_min) & (xau <= wavelength_max)]
+
+        if xau_filtered.size == 0:
+            xa_min, xa_max = (xau.min(), xau.max()) if xau.size > 0 else (np.nan, np.nan)
+            raise ValueError(
+                f"大气发射率数据在波长范围 {wavelength_min}–{wavelength_max} μm 内为空。"
+                f" 数据文件: {emissivity_atm_txt}。"
+                f" 文件内波长范围: {xa_min:.4f}–{xa_max:.4f} μm，"
+                f" 预期范围: {wavelength_min}–{wavelength_max} μm。"
+                f" 请检查文件内容或调整 WAVELENGTH_RANGE_EMISSIVITY 配置。"
+            )
+
         # 插值到目标波长
-        emissivityatm_interpolated = np.interp(X, xau, yau)
+        emissivityatm_interpolated = np.interp(X, xau_filtered, yau_filtered)
 
         return X, emissivity_interpolated, emissivityatm_interpolated
         

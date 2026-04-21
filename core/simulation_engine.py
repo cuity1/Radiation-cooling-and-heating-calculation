@@ -82,9 +82,19 @@ class SimulationEngine:
             'weather_data': []
         }
         
-        # 收敛性参数
-        self.convergence_tolerance = 0.01  # K
-        self.max_iterations = 10
+        # 收敛性参数（可从配置覆盖）
+        self.convergence_tolerance = self.config['simulation'].get('convergence_tolerance', 0.01)  # K
+        self.max_iterations = self.config['simulation'].get('max_iterations', 10)
+        
+        # 快速模式：自动优化参数
+        if self.config['simulation'].get('fast_mode', False):
+            self.convergence_tolerance = 0.05  # 放宽容差
+            self.max_iterations = 5  # 减少迭代
+            logger.info("快速模式：已优化收敛参数")
+        
+        # 采样模式（用于快速计算）
+        self.sampling_mode = self.config['simulation'].get('sampling_mode', 'none')
+        self.sampling_dates = self.config['simulation'].get('sampling_dates', None)
         
         logger.info("仿真引擎初始化完成")
         
@@ -116,31 +126,75 @@ class SimulationEngine:
         # 进度输出间隔（小时），默认每周一次
         progress_interval = self.config['simulation'].get('progress_interval_hours', 168)
         
-        while current_date <= self.end_date:
-            # 逐小时仿真
-            for hour in range(0, 24, self.timestep):
-                current_time = current_date.replace(hour=hour)
-                
-                # 更新天气数据
-                weather = self.weather_data.get_hourly_data(current_time)
-                
-                # 计算热平衡
-                for zone in self.building_model.zones:
-                    self._calculate_zone_heat_balance(zone, weather, current_time)
-                
-                # 计算 HVAC 负荷
-                for zone in self.building_model.zones:
-                    self._calculate_hvac_load(zone, weather)
-                
-                # 存储结果（仅在预热期后）
-                if current_date >= warmup_end:
-                    self._store_results(current_time, hour_counter)
-                    hour_counter += 1
-                    # 进度输出（仅在有效小时>0且到达间隔时输出）
-                    if progress_interval > 0 and hour_counter > 0 and (hour_counter % progress_interval == 0):
-                        logger.info(f"已完成 {hour_counter} 小时有效仿真")
+        # 采样模式：只计算指定日期
+        if self.sampling_dates:
+            # 将采样日期转换为日期对象
+            from datetime import date
+            sampling_date_set = set()
+            for month, day in self.sampling_dates:
+                try:
+                    # 使用当前年份
+                    year = current_date.year
+                    sampling_date_set.add(date(year, month, day))
+                except ValueError:
+                    # 处理无效日期（如2月30日）
+                    continue
             
-            current_date += timedelta(days=1)
+            # 只计算采样日期
+            while current_date <= self.end_date:
+                current_date_obj = current_date.date()
+                if current_date_obj in sampling_date_set:
+                    # 逐小时仿真
+                    for hour in range(0, 24, self.timestep):
+                        current_time = current_date.replace(hour=hour)
+                        
+                        # 更新天气数据
+                        weather = self.weather_data.get_hourly_data(current_time)
+                        
+                        # 计算热平衡
+                        for zone in self.building_model.zones:
+                            self._calculate_zone_heat_balance(zone, weather, current_time)
+                        
+                        # 计算 HVAC 负荷
+                        for zone in self.building_model.zones:
+                            self._calculate_hvac_load(zone, weather)
+                        
+                        # 存储结果（仅在预热期后）
+                        if current_date >= warmup_end:
+                            self._store_results(current_time, hour_counter)
+                            hour_counter += 1
+                            # 进度输出（仅在有效小时>0且到达间隔时输出）
+                            if progress_interval > 0 and hour_counter > 0 and (hour_counter % progress_interval == 0):
+                                logger.info(f"已完成 {hour_counter} 小时有效仿真")
+                
+                current_date += timedelta(days=1)
+        else:
+            # 正常模式：计算所有日期
+            while current_date <= self.end_date:
+                # 逐小时仿真
+                for hour in range(0, 24, self.timestep):
+                    current_time = current_date.replace(hour=hour)
+                    
+                    # 更新天气数据
+                    weather = self.weather_data.get_hourly_data(current_time)
+                    
+                    # 计算热平衡
+                    for zone in self.building_model.zones:
+                        self._calculate_zone_heat_balance(zone, weather, current_time)
+                    
+                    # 计算 HVAC 负荷
+                    for zone in self.building_model.zones:
+                        self._calculate_hvac_load(zone, weather)
+                    
+                    # 存储结果（仅在预热期后）
+                    if current_date >= warmup_end:
+                        self._store_results(current_time, hour_counter)
+                        hour_counter += 1
+                        # 进度输出（仅在有效小时>0且到达间隔时输出）
+                        if progress_interval > 0 and hour_counter > 0 and (hour_counter % progress_interval == 0):
+                            logger.info(f"已完成 {hour_counter} 小时有效仿真")
+                
+                current_date += timedelta(days=1)
         
         logger.info("仿真完成")
         
@@ -211,7 +265,8 @@ class SimulationEngine:
         zone.latent_load = float(max(0.0, latent_load))
 
         # 计算该小时能耗（J）
-        dt = 3600.0
+        # dt 应该等于 timestep 小时，而不是固定的1小时
+        dt = float(self.timestep * 3600.0)  # 秒
         T_outdoor_K = float(weather.get('temperature', 25.0)) + 273.15
         zone.cooling_energy = self.hvac_system.calculate_energy(zone.cooling_load, 'cooling', dt=dt, T_outdoor=T_outdoor_K)
         zone.heating_energy = self.hvac_system.calculate_energy(zone.heating_load, 'heating', dt=dt, T_outdoor=T_outdoor_K)

@@ -14,6 +14,28 @@ logger = logging.getLogger(__name__)
 # 简单的EPW缓存，减少重复IO与解析
 _EPW_CACHE = {}
 
+def _is_missing_value(x) -> bool:
+    """Return True if x represents a common EPW/CSV missing-value code."""
+    if x is None:
+        return True
+    try:
+        if pd.isna(x):
+            return True
+    except Exception:
+        pass
+    try:
+        v = float(x)
+    except Exception:
+        return True
+    # Common missing/sentinel codes seen in weather datasets (EPW/CSV)
+    # - 99/999/9999/99999, -99/-999/-9999, 1e20-style placeholders
+    if v in (99.0, 999.0, 9999.0, 99999.0, -99.0, -999.0, -9999.0, -99999.0):
+        return True
+    if abs(v) >= 1e19:
+        return True
+    return False
+
+
 class WeatherData:
     """
     天气数据处理器
@@ -295,7 +317,7 @@ class WeatherData:
             'diffuse_horizontal_radiation': float(row['DifHorzRad']),  # W/m²
             'wind_speed': float(row['WindSpeed']),  # m/s
             'atmospheric_pressure': float(row['AtmPres']),  # Pa
-            'infrared_sky_radiation': float(row['HorzIR']) if 'HorzIR' in self.data.columns and pd.notna(row['HorzIR']) else None,  # 近似 W/m²
+            'infrared_sky_radiation': (None if _is_missing_value(row['HorzIR']) else float(row['HorzIR'])) if 'HorzIR' in self.data.columns else None,  # 近似 W/m²
             'dew_point': float(row['DPT']) if 'DPT' in self.data.columns and pd.notna(row['DPT']) else None,  # °C
             'total_sky_cover': float(row['TotalSkyCover']) if 'TotalSkyCover' in self.data.columns and pd.notna(row['TotalSkyCover']) else None,  # 0-10
             'month': int(row['Month']),  # 月份（1-12），用于季节性太阳辐射计算
