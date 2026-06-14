@@ -21,7 +21,7 @@
 
 </div>（
 
-（本仓库网站计算模块仅逻辑开源，相关API、用户数据已去除，web大概率无法运行，仅供相关代码分析学习使用。
+（本仓库web大概率无法运行，仅供相关代码分析学习使用。离线端仍可打开main.py启动
 This repository only open-sources the website’s calculation logic. Related APIs and user data have been removed, so the repository is very likely not runnable and is provided for code analysis and learning purposes only.）
 
 ---
