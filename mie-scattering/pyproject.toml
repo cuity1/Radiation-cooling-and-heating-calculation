@@ -1,0 +1,33 @@
+[project]
+name = "nanoparticle-scattering-framework"
+version = "0.1.0"
+description = "General nanoparticle scattering exploration framework with FastAPI and React."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.7",
+  "numpy>=1.26,<2",
+  "scipy==1.14.1",
+  "matplotlib>=3.8",
+  "h5py>=3.11",
+  "miepython>=3.2",
+  "treams==0.4.5",
+  "rcwa==1.0.48",
+  "grcwa==0.1.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+  "httpx>=0.27",
+]
+meep = [
+  # Install the FDTD backend with conda-forge, not pip:
+  #   conda create -n meep -c conda-forge python=3.11 pymeep
+  # Then install the web dependencies in that environment.
+]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
